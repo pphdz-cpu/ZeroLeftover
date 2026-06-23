@@ -1,0 +1,283 @@
+[
+  {
+    "id": 1,
+    "name": "Street Tacos",
+    "type": "Beef",
+    "country": "Mexican",
+    "image": "https://images.unsplash.com/photo-1565299585323-38174c4aabaa?auto=format&fit=crop&w=800&q=80",
+    "ingredients": [
+      "1 lb ground beef",
+      "12 small flour tortillas",
+      "1 large onion",
+      "2 limes",
+      "1/2 cup cilantro",
+      "1 cup shredded cheese",
+      "1 tbsp cumin",
+      "Salt and pepper"
+    ],
+    "leftoversTips": "Use extra tortillas and cheese for quesadillas, or repurpose leftover beef and onion in a breakfast hash."
+  },
+  {
+    "id": 2,
+    "name": "Margherita Pizza",
+    "type": "Vegetarian",
+    "country": "Italian",
+    "image": "https://images.unsplash.com/photo-1574071318508-1cdbab80b002?auto=format&fit=crop&w=800&q=80",
+    "ingredients": [
+      "1 pizza dough ball",
+      "1/2 cup tomato sauce",
+      "8 oz fresh mozzarella",
+      "1/4 cup fresh basil leaves",
+      "2 tbsp olive oil",
+      "1 clove garlic",
+      "Salt"
+    ],
+    "leftoversTips": "Extra mozzarella and basil make a caprese salad; leftover dough can be rolled into garlic knots."
+  },
+  {
+    "id": 3,
+    "name": "Chicken Tikka Masala",
+    "type": "Chicken",
+    "country": "Indian",
+    "image": "https://images.unsplash.com/photo-1565557623264-b8cb8a1ab3da?auto=format&fit=crop&w=800&q=80",
+    "ingredients": [
+      "1.5 lbs chicken breast",
+      "1 cup plain yogurt",
+      "1 can (14 oz) tomato sauce",
+      "1/2 cup heavy cream",
+      "1 large onion",
+      "3 cloves garlic",
+      "1 tbsp garam masala",
+      "2 cups basmati rice",
+      "Fresh cilantro for garnish"
+    ],
+    "leftoversTips": "Leftover sauce and rice pair well with roasted vegetables or stuffed into wraps the next day."
+  },
+  {
+    "id": 4,
+    "name": "Spaghetti Carbonara",
+    "type": "Pasta",
+    "country": "Italian",
+    "image": "https://images.unsplash.com/photo-1612874741227-4c956a6ac27b?auto=format&fit=crop&w=800&q=80",
+    "ingredients": [
+      "1 lb spaghetti",
+      "4 large eggs",
+      "1 cup grated pecorino romano",
+      "6 oz pancetta or bacon",
+      "4 cloves garlic",
+      "2 tbsp olive oil",
+      "Black pepper"
+    ],
+    "leftoversTips": "Extra eggs and cheese work in a frittata; leftover pasta can be crisped in a skillet for a quick lunch."
+  },
+  {
+    "id": 5,
+    "name": "Pad Thai",
+    "type": "Chicken",
+    "country": "Thai",
+    "image": "https://images.unsplash.com/photo-1559314809-0d155014e29e?auto=format&fit=crop&w=800&q=80",
+    "ingredients": [
+      "8 oz rice noodles",
+      "1 lb chicken breast",
+      "2 eggs",
+      "1 cup bean sprouts",
+      "1/4 cup peanuts",
+      "3 tbsp fish sauce",
+      "2 tbsp tamarind paste",
+      "1 lime",
+      "2 cloves garlic",
+      "1 tbsp vegetable oil"
+    ],
+    "leftoversTips": "Use extra bean sprouts and peanuts in a crunchy salad, or toss leftovers with fresh lime for next-day stir-fry."
+  },
+  {
+    "id": 6,
+    "name": "Greek Salad",
+    "type": "Vegetarian",
+    "country": "Greek",
+    "image": "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=800&q=80",
+    "ingredients": [
+      "2 large cucumbers",
+      "4 Roma tomatoes",
+      "1 red onion",
+      "1 cup kalamata olives",
+      "1 cup feta cheese",
+      "1/4 cup olive oil",
+      "2 tbsp red wine vinegar",
+      "1 tsp dried oregano"
+    ],
+    "leftoversTips": "Half-used cucumber and feta make a great omelette filling or topping for toasted pita wedges."
+  },
+  {
+    "id": 7,
+    "name": "Beef Burrito Bowl",
+    "type": "Beef",
+    "country": "Mexican",
+    "image": "https://images.unsplash.com/photo-1516684669134-48d8d64f3998?auto=format&fit=crop&w=800&q=80",
+    "ingredients": [
+      "1 lb ground beef",
+      "2 cups cooked rice",
+      "1 can black beans",
+      "1 cup corn kernels",
+      "1 bell pepper",
+      "1 avocado",
+      "1/2 cup sour cream",
+      "1 lime",
+      "Taco seasoning"
+    ],
+    "leftoversTips": "Extra rice and beans become burrito filling; half an avocado should be used within a day in salads or on toast."
+  },
+  {
+    "id": 8,
+    "name": "Vegetable Curry",
+    "type": "Vegetarian",
+    "country": "Indian",
+    "image": "https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=800&q=80",
+    "ingredients": [
+      "1 can coconut milk",
+      "2 cups mixed vegetables",
+      "1 can chickpeas",
+      "2 cups spinach",
+      "1 large onion",
+      "2 tbsp curry paste",
+      "2 cups jasmine rice",
+      "1 tbsp ginger",
+      "2 cloves garlic"
+    ],
+    "leftoversTips": "Leftover coconut milk and spinach blend into a soup; extra chickpeas work in salads or roasted as a snack."
+  },
+  {
+    "id": 9,
+    "name": "Chicken Caesar Salad",
+    "type": "Chicken",
+    "country": "American",
+    "image": "https://images.unsplash.com/photo-1546793665-c74683f339c1?auto=format&fit=crop&w=800&q=80",
+    "ingredients": [
+      "1.5 lbs chicken breast",
+      "1 large head romaine lettuce",
+      "1/2 cup Caesar dressing",
+      "1/2 cup parmesan cheese",
+      "1 cup cherry tomatoes",
+      "1/2 cup croutons",
+      "1 lemon"
+    ],
+    "leftoversTips": "Extra lettuce and chicken make wraps; leftover dressing can dress a pasta salad with any spare vegetables."
+  },
+  {
+    "id": 10,
+    "name": "Shrimp Tacos",
+    "type": "Seafood",
+    "country": "Mexican",
+    "image": "https://images.unsplash.com/photo-1565299585323-38174c4aabaa?auto=format&fit=crop&w=800&q=80",
+    "ingredients": [
+      "1 lb large shrimp",
+      "8 corn tortillas",
+      "1 avocado",
+      "1/2 cup cabbage slaw",
+      "1 lime",
+      "2 tbsp sour cream",
+      "1 tsp chili powder",
+      "2 cloves garlic",
+      "Salt and pepper"
+    ],
+    "leftoversTips": "Use extra cabbage and lime in fish-style tacos or a tangy slaw for sandwiches the next day."
+  },
+  {
+    "id": 11,
+    "name": "Mushroom Risotto",
+    "type": "Vegetarian",
+    "country": "Italian",
+    "image": "https://images.unsplash.com/photo-1476124369491-e7addf5db371?auto=format&fit=crop&w=800&q=80",
+    "ingredients": [
+      "2 cups arborio rice",
+      "8 oz cremini mushrooms",
+      "1/2 cup white wine",
+      "4 cups vegetable broth",
+      "1/2 cup parmesan cheese",
+      "2 tbsp butter",
+      "1 small onion",
+      "2 cloves garlic",
+      "Fresh thyme"
+    ],
+    "leftoversTips": "Leftover risotto can be shaped into arancini balls; extra mushrooms sauté well for omelettes or toast toppings."
+  },
+  {
+    "id": 12,
+    "name": "Korean Bibimbap",
+    "type": "Beef",
+    "country": "Korean",
+    "image": "https://images.unsplash.com/photo-1553160147-622ab57be966?auto=format&fit=crop&w=800&q=80",
+    "ingredients": [
+      "1 lb thinly sliced beef",
+      "3 cups cooked rice",
+      "2 cups spinach",
+      "1 cup bean sprouts",
+      "2 carrots",
+      "4 eggs",
+      "3 tbsp gochujang",
+      "2 tbsp sesame oil",
+      "2 cloves garlic",
+      "Soy sauce"
+    ],
+    "leftoversTips": "Extra vegetables and rice make fried rice; half-used spinach and eggs work in a Korean-style omelette."
+  },
+  {
+    "id": 13,
+    "name": "French Ratatouille",
+    "type": "Vegetarian",
+    "country": "French",
+    "image": "https://images.unsplash.com/photo-1598866594230-a7c12756260f?auto=format&fit=crop&w=800&q=80",
+    "ingredients": [
+      "2 zucchini",
+      "2 eggplants",
+      "4 Roma tomatoes",
+      "1 red bell pepper",
+      "1 yellow bell pepper",
+      "1 large onion",
+      "4 cloves garlic",
+      "3 tbsp olive oil",
+      "Fresh basil",
+      "Salt and pepper"
+    ],
+    "leftoversTips": "Leftover ratatouille is excellent over pasta, blended into soup, or served cold with crusty bread."
+  },
+  {
+    "id": 14,
+    "name": "BBQ Pulled Pork Sandwiches",
+    "type": "Pork",
+    "country": "American",
+    "image": "https://images.unsplash.com/photo-1529193591184-b1fd580b351f?auto=format&fit=crop&w=800&q=80",
+    "ingredients": [
+      "2 lbs pork shoulder",
+      "1 cup BBQ sauce",
+      "8 brioche buns",
+      "1 large onion",
+      "2 cups coleslaw mix",
+      "1/2 cup pickle chips",
+      "2 tbsp brown sugar",
+      "1 tbsp paprika",
+      "Salt and pepper"
+    ],
+    "leftoversTips": "Extra pulled pork tops baked potatoes or nachos; leftover coleslaw adds crunch to wraps or tacos."
+  },
+  {
+    "id": 15,
+    "name": "Teriyaki Chicken Bowl",
+    "type": "Chicken",
+    "country": "Japanese",
+    "image": "https://images.unsplash.com/photo-1603133872877-684f208fb84b?auto=format&fit=crop&w=800&q=80",
+    "ingredients": [
+      "1.5 lbs chicken thighs",
+      "1/4 cup soy sauce",
+      "2 tbsp mirin",
+      "1 tbsp honey",
+      "2 cups cooked rice",
+      "1 cup broccoli florets",
+      "1 carrot",
+      "2 green onions",
+      "1 tbsp sesame seeds",
+      "1 clove garlic"
+    ],
+    "leftoversTips": "Leftover teriyaki chicken and rice make onigiri or stir-fry; extra broccoli can be roasted for a quick side."
+  }
+]
