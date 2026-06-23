@@ -148,11 +148,104 @@ const BONUS_RECIPES = [
 
 // ─── App state ────────────────────────────────────────────────────────────────
 
+const STORAGE_KEYS = {
+  customMeals: 'zeroLeftover_customMeals',
+  selectedMeals: 'zeroLeftover_selectedMeals',
+};
+
 const state = {
   selectedMealIds: new Set(),
   checkedGroceries: new Set(),
   customMeals: [],
 };
+
+// ─── localStorage persistence ─────────────────────────────────────────────────
+
+function saveCustomMeals() {
+  try {
+    localStorage.setItem(STORAGE_KEYS.customMeals, JSON.stringify(state.customMeals));
+  } catch (error) {
+    console.warn('Could not save custom meals to localStorage:', error);
+  }
+}
+
+function saveSelectedMeals() {
+  try {
+    localStorage.setItem(
+      STORAGE_KEYS.selectedMeals,
+      JSON.stringify(Array.from(state.selectedMealIds))
+    );
+  } catch (error) {
+    console.warn('Could not save selected meals to localStorage:', error);
+  }
+}
+
+function isValidCustomMeal(meal) {
+  if (!meal || typeof meal !== 'object') return false;
+  if (!meal.id || !meal.name || !Array.isArray(meal.ingredients)) return false;
+  if (meal.ingredients.length === 0) return false;
+
+  return meal.ingredients.every(
+    (ingredient) =>
+      ingredient &&
+      typeof ingredient.name === 'string' &&
+      typeof ingredient.amount === 'string' &&
+      typeof ingredient.usedFraction === 'number'
+  );
+}
+
+function normalizeStoredCustomMeal(meal) {
+  return {
+    id: meal.id,
+    name: meal.name,
+    image: meal.image || CUSTOM_MEAL_PLACEHOLDER,
+    servings: meal.servings || Math.max(2, Math.ceil(meal.ingredients.length / 3)),
+    isCustom: true,
+    ingredients: meal.ingredients.map((ingredient) => ({
+      name: ingredient.name,
+      amount: ingredient.amount,
+      usedFraction: ingredient.usedFraction,
+      leftoverLabel: ingredient.leftoverLabel,
+    })),
+  };
+}
+
+/**
+ * On page load: restore custom meals and selected meal IDs from localStorage,
+ * then rebuild the UI (meal cards, grocery list, leftover magic).
+ */
+function loadFromStorage() {
+  try {
+    const savedCustomMeals = localStorage.getItem(STORAGE_KEYS.customMeals);
+    if (savedCustomMeals) {
+      const parsed = JSON.parse(savedCustomMeals);
+      if (Array.isArray(parsed)) {
+        state.customMeals = parsed
+          .filter(isValidCustomMeal)
+          .map(normalizeStoredCustomMeal);
+      }
+    }
+  } catch (error) {
+    console.warn('Could not load custom meals from localStorage:', error);
+    state.customMeals = [];
+  }
+
+  try {
+    const savedSelection = localStorage.getItem(STORAGE_KEYS.selectedMeals);
+    if (savedSelection) {
+      const parsed = JSON.parse(savedSelection);
+      if (Array.isArray(parsed)) {
+        const validMealIds = new Set(getAllMeals().map((meal) => meal.id));
+        state.selectedMealIds = new Set(
+          parsed.filter((id) => typeof id === 'string' && validMealIds.has(id))
+        );
+      }
+    }
+  } catch (error) {
+    console.warn('Could not load selected meals from localStorage:', error);
+    state.selectedMealIds.clear();
+  }
+}
 
 // ─── DOM references ───────────────────────────────────────────────────────────
 
@@ -323,6 +416,7 @@ function handleAddMeal(event) {
   }
 
   state.customMeals.push(meal);
+  saveCustomMeals();
   mealNameInput.value = '';
   mealIngredientsInput.value = '';
 
@@ -340,7 +434,7 @@ function handleAddMeal(event) {
 // ─── Init & navigation ────────────────────────────────────────────────────────
 
 function init() {
-  renderMealGrid();
+  loadFromStorage();
   bindNavigation();
   bindMealActions();
   bindGroceryActions();
@@ -379,6 +473,7 @@ function bindMealActions() {
   clearSelectionBtn.addEventListener('click', () => {
     state.selectedMealIds.clear();
     state.checkedGroceries.clear();
+    saveSelectedMeals();
     updateAllViews();
   });
 }
@@ -434,6 +529,7 @@ function toggleMeal(mealId) {
   } else {
     state.selectedMealIds.add(mealId);
   }
+  saveSelectedMeals();
   updateAllViews();
 }
 
