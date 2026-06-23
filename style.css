@@ -521,6 +521,51 @@ img {
   gap: 1.5rem;
 }
 
+.meal-grid-status {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: var(--text-secondary);
+  font-size: 1.0625rem;
+  margin: 0;
+}
+
+.meal-grid-error {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 2rem 1.25rem;
+  color: #b42318;
+  background: #fef3f2;
+  border: 1px solid #fecdca;
+  border-radius: var(--radius-lg);
+  font-size: 0.975rem;
+  margin: 0;
+  line-height: 1.55;
+}
+
+.meal-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.45rem;
+}
+
+.meal-tag {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-full);
+  background: var(--mint-100);
+  color: var(--mint-800);
+}
+
+.meal-tag--country {
+  background: var(--gold-light);
+  color: #7a6230;
+}
+
 .meal-card {
   position: relative;
   border: 2px solid transparent;
@@ -949,6 +994,42 @@ img {
   font-size: 0.8125rem;
   color: var(--text-muted);
   margin-top: 0.15rem;
+}
+
+.leftover-tips {
+  margin-top: 1.25rem;
+  padding-top: 1.15rem;
+  border-top: 1px solid var(--border);
+}
+
+.leftover-tips-title {
+  margin: 0 0 0.65rem;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--mint-800);
+}
+
+.leftover-tips-list {
+  margin: 0;
+  padding-left: 1.15rem;
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.leftover-tips-list li {
+  margin-bottom: 0.45rem;
+}
+
+.leftover-tips-list li:last-child {
+  margin-bottom: 0;
+}
+
+.leftover-tips-list strong {
+  color: var(--mint-900);
+  font-weight: 700;
 }
 
 .leftover-empty-msg {

@@ -40,71 +40,13 @@ const DEFAULT_INGREDIENT_IMAGE = `${UNSPLASH}/photo-1495521821757-a1efb6729352?a
 // Default placeholder for user-created meals (generic plated food)
 const CUSTOM_MEAL_PLACEHOLDER = `${UNSPLASH}/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80`;
 
-// ─── Sample meals (behind the scenes data) ────────────────────────────────────
-//
-// Each ingredient has:
-//   name, amount (display), usedFraction (0–1 of what you buy),
-//   leftoverLabel (what's left, shown when usedFraction < 1)
+const RECIPES_URL = 'recipes.json';
 
-const MEALS = [
-  {
-    id: 'spaghetti',
-    name: 'Spaghetti Marinara',
-    image: `${UNSPLASH}/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=800&q=80`,
-    servings: 4,
-    ingredients: [
-      { name: 'Spaghetti', amount: '1 lb', usedFraction: 1 },
-      { name: 'Ground beef', amount: '1 lb', usedFraction: 1 },
-      { name: 'Onion', amount: '1 large', usedFraction: 0.5, leftoverLabel: '1/2 large onion' },
-      { name: 'Garlic', amount: '4 cloves', usedFraction: 0.5, leftoverLabel: '2 cloves garlic' },
-      { name: 'Tomato sauce', amount: '1 can (24 oz)', usedFraction: 1 },
-      { name: 'Parmesan', amount: '1/2 cup', usedFraction: 0.5, leftoverLabel: '1/4 cup parmesan' },
-    ],
-  },
-  {
-    id: 'chicken-salad',
-    name: 'Chicken Salad',
-    image: `${UNSPLASH}/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80`,
-    servings: 3,
-    ingredients: [
-      { name: 'Chicken breast', amount: '1.5 lbs', usedFraction: 1 },
-      { name: 'Spinach', amount: '1 bag (10 oz)', usedFraction: 0.5, leftoverLabel: '1/2 bag spinach' },
-      { name: 'Cucumber', amount: '1 medium', usedFraction: 0.5, leftoverLabel: '1/2 cucumber' },
-      { name: 'Cherry tomatoes', amount: '1 cup', usedFraction: 0.5, leftoverLabel: '1/2 cup cherry tomatoes' },
-      { name: 'Olive oil', amount: '3 tbsp', usedFraction: 1 },
-      { name: 'Lemon', amount: '1', usedFraction: 0.5, leftoverLabel: '1/2 lemon' },
-    ],
-  },
-  {
-    id: 'veggie-tacos',
-    name: 'Veggie Tacos',
-    image: `${UNSPLASH}/photo-1565299585323-38174c4aabaa?auto=format&fit=crop&w=800&q=80`,
-    servings: 4,
-    ingredients: [
-      { name: 'Taco shells', amount: '12 shells', usedFraction: 0.67, leftoverLabel: '4 taco shells' },
-      { name: 'Black beans', amount: '1 can (15 oz)', usedFraction: 1 },
-      { name: 'Bell peppers', amount: '2 large', usedFraction: 0.5, leftoverLabel: '1 large bell pepper' },
-      { name: 'Onion', amount: '1 large', usedFraction: 0.5, leftoverLabel: '1/2 large onion' },
-      { name: 'Cilantro', amount: '1 bunch', usedFraction: 0.5, leftoverLabel: '1/2 bunch cilantro' },
-      { name: 'Lime', amount: '2', usedFraction: 0.5, leftoverLabel: '1 lime' },
-      { name: 'Avocado', amount: '2', usedFraction: 0.5, leftoverLabel: '1 avocado' },
-    ],
-  },
-  {
-    id: 'mediterranean-bowl',
-    name: 'Mediterranean Rice Bowl',
-    image: `${UNSPLASH}/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80`,
-    servings: 3,
-    ingredients: [
-      { name: 'Jasmine rice', amount: '2 cups dry', usedFraction: 0.5, leftoverLabel: '1 cup dry jasmine rice' },
-      { name: 'Chickpeas', amount: '1 can (15 oz)', usedFraction: 0.5, leftoverLabel: '1/2 can chickpeas' },
-      { name: 'Spinach', amount: '2 cups', usedFraction: 0.5, leftoverLabel: '1 cup spinach' },
-      { name: 'Feta cheese', amount: '1/2 cup', usedFraction: 0.5, leftoverLabel: '1/4 cup feta cheese' },
-      { name: 'Cucumber', amount: '1 medium', usedFraction: 0.5, leftoverLabel: '1/2 cucumber' },
-      { name: 'Cherry tomatoes', amount: '1 cup', usedFraction: 0.5, leftoverLabel: '1/2 cup cherry tomatoes' },
-    ],
-  },
-];
+// Ingredients that are typically used entirely (not partial leftovers)
+const FULL_USE_PATTERN = /^(salt|pepper|black pepper|oil|vinegar|sauce|paste|seasoning|spice|honey|soy sauce|mirin|gochujang|fish sauce|tamarind|broth|water)/i;
+
+// Ingredients commonly bought in larger amounts than one recipe needs
+const PARTIAL_USE_PATTERN = /onion|garlic|cheese|herb|lettuce|spinach|tomato|pepper|avocado|lime|lemon|cucumber|basil|cilantro|cream|yogurt|broccoli|mushroom|egg(?!plant)|rice|noodle|pasta|tortilla|mozzarella|feta| cabbage|carrot|zucchini|eggplant|bean sprout|peanut|pickle|coleslaw|dough|bun|shrimp|beef|chicken|pork|egg/i;
 
 // Bonus recipes matched to common leftover ingredients
 const BONUS_RECIPES = [
@@ -158,6 +100,9 @@ const state = {
   selectedMealIds: new Set(),
   checkedGroceries: new Set(),
   customMeals: [],
+  recipeMeals: [],
+  recipesLoaded: false,
+  recipesError: null,
 };
 
 // ─── localStorage persistence ─────────────────────────────────────────────────
@@ -297,6 +242,8 @@ const mealNameInput = document.getElementById('meal-name-input');
 const mealIngredientsInput = document.getElementById('meal-ingredients-input');
 const addMealError = document.getElementById('add-meal-error');
 const addMealSuccess = document.getElementById('add-meal-success');
+const leftoverTips = document.getElementById('leftover-tips');
+const leftoverTipsList = document.getElementById('leftover-tips-list');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -316,7 +263,96 @@ function capitalizeWords(str) {
 }
 
 function getAllMeals() {
-  return [...MEALS, ...state.customMeals];
+  return [...state.recipeMeals, ...state.customMeals];
+}
+
+// ─── Load recipes from recipes.json ───────────────────────────────────────────
+
+function isValidRecipe(recipe) {
+  if (!recipe || typeof recipe !== 'object') return false;
+  if (typeof recipe.id !== 'number' || !recipe.name || !Array.isArray(recipe.ingredients)) return false;
+  if (recipe.ingredients.length === 0) return false;
+  return recipe.ingredients.every((item) => typeof item === 'string' && item.trim());
+}
+
+function buildIngredientWithLeftover(name, amount) {
+  const nameLower = name.toLowerCase();
+  const isPartial =
+    PARTIAL_USE_PATTERN.test(nameLower) && !FULL_USE_PATTERN.test(nameLower);
+
+  if (!isPartial) {
+    return { name, amount, usedFraction: 1 };
+  }
+
+  const leftoverLabel =
+    amount === '1' || amount === 'to taste'
+      ? `half ${nameLower}`
+      : `half ${amount} ${nameLower}`;
+
+  return { name, amount, usedFraction: 0.5, leftoverLabel };
+}
+
+function recipeToMeal(recipe) {
+  const ingredients = recipe.ingredients
+    .map((raw) => {
+      const parsed = parseIngredientInput(raw);
+      if (!parsed) return null;
+      return buildIngredientWithLeftover(parsed.name, parsed.amount);
+    })
+    .filter(Boolean);
+
+  return {
+    id: `recipe-${recipe.id}`,
+    name: recipe.name,
+    image: recipe.image,
+    type: recipe.type,
+    country: recipe.country,
+    leftoversTips: recipe.leftoversTips,
+    servings: Math.max(2, Math.ceil(ingredients.length / 3)),
+    isRecipe: true,
+    ingredients,
+  };
+}
+
+async function loadRecipes() {
+  try {
+    const response = await fetch(RECIPES_URL);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const recipes = await response.json();
+    if (!Array.isArray(recipes)) {
+      throw new Error('recipes.json must contain an array');
+    }
+
+    state.recipeMeals = recipes.filter(isValidRecipe).map(recipeToMeal);
+    state.recipesError = null;
+  } catch (error) {
+    console.error('Failed to load recipes.json:', error);
+    state.recipeMeals = [];
+    state.recipesError = error.message;
+  } finally {
+    state.recipesLoaded = true;
+  }
+}
+
+function getMealMeta(meal) {
+  if (meal.isCustom) {
+    return `${meal.ingredients.length} ingredients · ${meal.servings} servings`;
+  }
+  if (meal.type && meal.country) {
+    return `${meal.ingredients.length} ingredients · ${meal.servings} servings`;
+  }
+  return `${meal.ingredients.length} ingredients · ${meal.servings} servings`;
+}
+
+function getMealTags(meal) {
+  if (!meal.type && !meal.country) return '';
+  const tags = [];
+  if (meal.type) tags.push(`<span class="meal-tag">${escapeHtml(meal.type)}</span>`);
+  if (meal.country) tags.push(`<span class="meal-tag meal-tag--country">${escapeHtml(meal.country)}</span>`);
+  return `<div class="meal-tags">${tags.join('')}</div>`;
 }
 
 function getIngredientImage(name) {
@@ -341,7 +377,7 @@ function parseIngredientInput(raw) {
   const text = raw.trim();
   if (!text) return null;
 
-  const quantityPattern = /^([\d./]+\s*(?:lbs?|pounds?|oz|ounces?|cups?|tbsp|tsp|teaspoons?|tablespoons?|cloves?|cans?|bunch(?:es)?|large|medium|small|bags?|shells?|slices?)?\s+)(.+)$/i;
+  const quantityPattern = /^([\d./]+\s*(?:lbs?|pounds?|oz|ounces?|cups?|tbsp|tsp|teaspoons?|tablespoons?|cloves?|cans?|bunch(?:es)?|large|medium|small|bags?|shells?|slices?|buns?|thighs?|head|florets?|balls?)?\s*)(.+)$/i;
   const match = text.match(quantityPattern);
 
   if (match) {
@@ -360,18 +396,7 @@ function parseIngredientInput(raw) {
 function buildCustomIngredient(raw) {
   const parsed = parseIngredientInput(raw);
   if (!parsed) return null;
-
-  const { name, amount } = parsed;
-  const leftoverLabel = amount === '1'
-    ? `half ${name.toLowerCase()}`
-    : `half ${amount} ${name.toLowerCase()}`;
-
-  return {
-    name,
-    amount,
-    usedFraction: 0.5,
-    leftoverLabel,
-  };
+  return buildIngredientWithLeftover(parsed.name, parsed.amount);
 }
 
 function createCustomMeal(name, ingredientsText) {
@@ -462,13 +487,16 @@ function handleAddMeal(event) {
 
 // ─── Init & navigation ────────────────────────────────────────────────────────
 
-function init() {
-  loadFromStorage();
+async function init() {
   bindNavigation();
   bindMealActions();
   bindGroceryActions();
   bindAddMealForm();
   bindStartFresh();
+  renderMealGrid();
+
+  await loadRecipes();
+  loadFromStorage();
   updateAllViews();
 }
 
@@ -557,7 +585,29 @@ function bindGroceryActions() {
 // ─── Meal selector: click to select / deselect ────────────────────────────────
 
 function renderMealGrid() {
-  mealGrid.innerHTML = getAllMeals().map((meal) => {
+  if (!state.recipesLoaded) {
+    mealGrid.innerHTML = '<p class="meal-grid-status">Loading recipes…</p>';
+    return;
+  }
+
+  if (state.recipesError && state.recipeMeals.length === 0 && state.customMeals.length === 0) {
+    mealGrid.innerHTML = `
+      <p class="meal-grid-error">
+        Could not load recipes.json (${escapeHtml(state.recipesError)}).
+        Open this app through a local web server so the recipe file can load.
+      </p>
+    `;
+    return;
+  }
+
+  const meals = getAllMeals();
+
+  if (meals.length === 0) {
+    mealGrid.innerHTML = '<p class="meal-grid-status">No meals available. Add your own using the form.</p>';
+    return;
+  }
+
+  mealGrid.innerHTML = meals.map((meal) => {
     const selected = state.selectedMealIds.has(meal.id);
     const customClass = meal.isCustom ? ' meal-card--custom' : '';
     const customBadge = meal.isCustom
@@ -580,8 +630,9 @@ function renderMealGrid() {
           <span class="meal-photo-overlay" aria-hidden="true"></span>
         </div>
         <div class="meal-info">
+          ${getMealTags(meal)}
           <h3 class="meal-name">${escapeHtml(meal.name)}</h3>
-          <p class="meal-meta">${meal.ingredients.length} ingredients · ${meal.servings} servings</p>
+          <p class="meal-meta">${getMealMeta(meal)}</p>
         </div>
       </button>
     `;
@@ -826,16 +877,18 @@ function renderLeftoverMagic() {
         .map(
           (item) => `
             <li>
-              <img class="leftover-thumb" src="${item.image}" alt="${item.name}" width="48" height="48" loading="lazy">
+              <img class="leftover-thumb" src="${item.image}" alt="${escapeHtml(item.name)}" width="48" height="48" loading="lazy">
               <div class="leftover-details">
-                <span class="leftover-amount">${item.remaining}</span>
-                <span class="leftover-name">${item.name}</span>
-                <span class="leftover-from">from ${item.meals.join(', ')}</span>
+                <span class="leftover-amount">${escapeHtml(item.remaining)}</span>
+                <span class="leftover-name">${escapeHtml(item.name)}</span>
+                <span class="leftover-from">from ${escapeHtml(item.meals.join(', '))}</span>
               </div>
             </li>
           `
         )
         .join('');
+
+  renderLeftoverTips();
 
   if (!recipe) {
     recipeSpotlight.innerHTML = '<p class="recipe-fallback">Select meals with partial ingredients to unlock a bonus recipe.</p>';
@@ -863,6 +916,25 @@ function renderLeftoverMagic() {
       </ul>
     </div>
   `;
+}
+
+function renderLeftoverTips() {
+  if (!leftoverTips || !leftoverTipsList) return;
+
+  const tips = getSelectedMeals()
+    .filter((meal) => meal.leftoversTips)
+    .map((meal) => ({ name: meal.name, tip: meal.leftoversTips }));
+
+  if (tips.length === 0) {
+    leftoverTips.hidden = true;
+    leftoverTipsList.innerHTML = '';
+    return;
+  }
+
+  leftoverTips.hidden = false;
+  leftoverTipsList.innerHTML = tips
+    .map((entry) => `<li><strong>${escapeHtml(entry.name)}:</strong> ${escapeHtml(entry.tip)}</li>`)
+    .join('');
 }
 
 // ─── Sync all views when selection changes ────────────────────────────────────

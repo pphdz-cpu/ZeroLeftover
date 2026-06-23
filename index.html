@@ -45,7 +45,7 @@
         <div class="section-badge">Step 1</div>
         <div class="section-header">
           <h1 id="meal-selector-heading">Meal Selector</h1>
-          <p class="section-subtitle">Tap the meals you want this week. Your picks instantly shape your grocery list and leftover ideas.</p>
+          <p class="section-subtitle">Browse 15 recipes from around the world, or add your own. Tap to select — your picks instantly shape your grocery list and leftover ideas.</p>
         </div>
       </div>
 
@@ -95,7 +95,9 @@
           </form>
         </aside>
 
-        <div class="meal-grid" id="meal-grid" role="list"></div>
+        <div class="meal-grid" id="meal-grid" role="list">
+          <p class="meal-grid-status" id="meal-grid-status">Loading recipes…</p>
+        </div>
       </div>
     </section>
 
@@ -176,6 +178,10 @@
               </div>
             </div>
             <ul class="leftover-list" id="leftover-list" role="list"></ul>
+            <div class="leftover-tips" id="leftover-tips" hidden>
+              <h3 class="leftover-tips-title">Recipe leftover tips</h3>
+              <ul class="leftover-tips-list" id="leftover-tips-list"></ul>
+            </div>
           </article>
 
           <article class="card recipe-card">
