@@ -711,6 +711,32 @@ img {
   display: flex;
   align-items: center;
   gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.panel-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.grocery-progress {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--mint-700);
+  background: var(--mint-100);
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-full);
+}
+
+.grocery-hint {
+  margin: 0;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  background: var(--warm-white);
+  border-bottom: 1px solid var(--border);
+  line-height: 1.45;
 }
 
 .panel-icon {
@@ -740,7 +766,16 @@ img {
   background: var(--mint-50);
 }
 
-.checklist-item input[type="checkbox"] {
+.checklist-item.checked {
+  background: #f3f5f4;
+}
+
+.checklist-item.checked:hover {
+  background: #eef1ef;
+}
+
+.checklist-item input[type="checkbox"],
+.grocery-checkbox {
   width: 1.35rem;
   height: 1.35rem;
   accent-color: var(--mint-600);
@@ -783,6 +818,15 @@ img {
   text-decoration: line-through;
 }
 
+.checklist-item.checked .amount {
+  color: var(--text-muted);
+}
+
+.checklist-item.checked .ingredient-thumb {
+  filter: grayscale(0.55);
+  opacity: 0.55;
+}
+
 .checklist-source {
   font-size: 0.8125rem;
   font-weight: 600;
@@ -792,6 +836,12 @@ img {
   border-radius: var(--radius-full);
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+.checklist-item.checked .checklist-source {
+  color: var(--text-muted);
+  background: #e8ece9;
+  text-decoration: line-through;
 }
 
 /* ── Leftover Magic ── */
@@ -1018,16 +1068,58 @@ img {
 /* ── Footer ── */
 
 .site-footer {
-  text-align: center;
-  padding: 2rem 1.5rem;
+  padding: 1.5rem;
   color: var(--text-muted);
   font-size: 0.9375rem;
   border-top: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.footer-inner {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .site-footer p {
   margin: 0;
+}
+
+.btn-start-fresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  font-family: inherit;
+  color: var(--mint-800);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition), box-shadow var(--transition), transform 0.12s ease;
+  box-shadow: var(--shadow-xs);
+}
+
+.start-fresh-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+  opacity: 0.85;
+}
+
+.btn-start-fresh:hover {
+  background: var(--mint-50);
+  border-color: var(--mint-400);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-start-fresh:active {
+  transform: scale(0.97);
 }
 
 /* ── Responsive ── */
@@ -1080,5 +1172,15 @@ img {
 
   .main-content {
     padding: 1.5rem 1.15rem 3rem;
+  }
+
+  .footer-inner {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .btn-start-fresh {
+    width: 100%;
+    justify-content: center;
   }
 }

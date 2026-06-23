@@ -129,9 +129,13 @@
           <div class="panel-toolbar-left">
             <span class="panel-icon" aria-hidden="true">📋</span>
             <span id="grocery-item-count" aria-live="polite">0 items</span>
+            <span class="grocery-progress" id="grocery-progress" hidden></span>
           </div>
-          <button type="button" class="btn btn-secondary btn-sm" id="uncheck-all">Uncheck all</button>
+          <div class="panel-toolbar-actions">
+            <button type="button" class="btn btn-secondary btn-sm" id="uncheck-all">Uncheck all</button>
+          </div>
         </div>
+        <p class="grocery-hint">Tap items as you shop — checked items stay crossed off even after you close the browser.</p>
         <ul class="checklist" id="grocery-checklist" role="list"></ul>
       </div>
     </section>
@@ -190,7 +194,13 @@
   </main>
 
   <footer class="site-footer">
-    <p>Zero Leftover — cook smart, waste nothing.</p>
+    <div class="footer-inner">
+      <p>Zero Leftover — cook smart, waste nothing.</p>
+      <button type="button" class="btn btn-start-fresh" id="start-fresh-btn" aria-label="Start fresh for a new week">
+        <span class="start-fresh-icon" aria-hidden="true">↻</span>
+        Start Fresh
+      </button>
+    </div>
   </footer>
 
   <script src="script.js"></script>

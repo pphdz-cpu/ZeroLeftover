@@ -151,6 +151,7 @@ const BONUS_RECIPES = [
 const STORAGE_KEYS = {
   customMeals: 'zeroLeftover_customMeals',
   selectedMeals: 'zeroLeftover_selectedMeals',
+  checkedGroceries: 'zeroLeftover_checkedGroceries',
 };
 
 const state = {
@@ -177,6 +178,17 @@ function saveSelectedMeals() {
     );
   } catch (error) {
     console.warn('Could not save selected meals to localStorage:', error);
+  }
+}
+
+function saveCheckedGroceries() {
+  try {
+    localStorage.setItem(
+      STORAGE_KEYS.checkedGroceries,
+      JSON.stringify(Array.from(state.checkedGroceries))
+    );
+  } catch (error) {
+    console.warn('Could not save grocery checkoffs to localStorage:', error);
   }
 }
 
@@ -245,6 +257,21 @@ function loadFromStorage() {
     console.warn('Could not load selected meals from localStorage:', error);
     state.selectedMealIds.clear();
   }
+
+  try {
+    const savedChecked = localStorage.getItem(STORAGE_KEYS.checkedGroceries);
+    if (savedChecked) {
+      const parsed = JSON.parse(savedChecked);
+      if (Array.isArray(parsed)) {
+        state.checkedGroceries = new Set(
+          parsed.filter((id) => typeof id === 'string')
+        );
+      }
+    }
+  } catch (error) {
+    console.warn('Could not load grocery checkoffs from localStorage:', error);
+    state.checkedGroceries.clear();
+  }
 }
 
 // ─── DOM references ───────────────────────────────────────────────────────────
@@ -257,7 +284,9 @@ const groceryEmpty = document.getElementById('grocery-empty');
 const groceryPanel = document.getElementById('grocery-panel');
 const groceryChecklist = document.getElementById('grocery-checklist');
 const groceryItemCount = document.getElementById('grocery-item-count');
+const groceryProgress = document.getElementById('grocery-progress');
 const uncheckAllBtn = document.getElementById('uncheck-all');
+const startFreshBtn = document.getElementById('start-fresh-btn');
 const leftoverEmpty = document.getElementById('leftover-empty');
 const leftoverPanel = document.getElementById('leftover-panel');
 const leftoverList = document.getElementById('leftover-list');
@@ -439,7 +468,45 @@ function init() {
   bindMealActions();
   bindGroceryActions();
   bindAddMealForm();
+  bindStartFresh();
   updateAllViews();
+}
+
+function bindStartFresh() {
+  if (!startFreshBtn) return;
+  startFreshBtn.addEventListener('click', startFreshWeek);
+}
+
+/**
+ * Reset the week: clear meal selections, grocery checkoffs, and related localStorage.
+ * Custom meals are kept so users don't lose their saved recipes.
+ */
+function startFreshWeek() {
+  const hasSelections = state.selectedMealIds.size > 0;
+  const hasCheckoffs = state.checkedGroceries.size > 0;
+
+  if (!hasSelections && !hasCheckoffs) {
+    showSection('meal-selector');
+    return;
+  }
+
+  const confirmed = window.confirm(
+    'Start a new week? This will clear your meal selections and grocery checkoffs so you can plan again.'
+  );
+  if (!confirmed) return;
+
+  state.selectedMealIds.clear();
+  state.checkedGroceries.clear();
+
+  try {
+    localStorage.removeItem(STORAGE_KEYS.selectedMeals);
+    localStorage.removeItem(STORAGE_KEYS.checkedGroceries);
+  } catch (error) {
+    console.warn('Could not clear week data from localStorage:', error);
+  }
+
+  updateAllViews();
+  showSection('meal-selector');
 }
 
 function bindAddMealForm() {
@@ -474,6 +541,7 @@ function bindMealActions() {
     state.selectedMealIds.clear();
     state.checkedGroceries.clear();
     saveSelectedMeals();
+    saveCheckedGroceries();
     updateAllViews();
   });
 }
@@ -481,6 +549,7 @@ function bindMealActions() {
 function bindGroceryActions() {
   uncheckAllBtn.addEventListener('click', () => {
     state.checkedGroceries.clear();
+    saveCheckedGroceries();
     renderGroceryList();
   });
 }
@@ -582,7 +651,19 @@ function renderGroceryList() {
 
   if (!hasMeals) return;
 
+  const checkedCount = items.filter((item) => state.checkedGroceries.has(item.id)).length;
+
   groceryItemCount.textContent = `${items.length} item${items.length === 1 ? '' : 's'}`;
+
+  if (groceryProgress) {
+    if (checkedCount > 0) {
+      groceryProgress.textContent = `${checkedCount} of ${items.length} in cart`;
+      groceryProgress.hidden = false;
+    } else {
+      groceryProgress.hidden = true;
+      groceryProgress.textContent = '';
+    }
+  }
 
   groceryChecklist.innerHTML = items
     .map((item) => {
@@ -591,17 +672,19 @@ function renderGroceryList() {
         <li class="checklist-item${checked ? ' checked' : ''}">
           <input
             type="checkbox"
+            class="grocery-checkbox"
             id="grocery-${item.id}"
             data-grocery-id="${item.id}"
+            aria-label="Mark ${escapeHtml(item.name)} as in cart"
             ${checked ? 'checked' : ''}
           >
-          <img class="ingredient-thumb" src="${item.image}" alt="${item.name}" width="52" height="52" loading="lazy">
+          <img class="ingredient-thumb" src="${item.image}" alt="" width="52" height="52" loading="lazy">
           <div class="checklist-content">
             <label for="grocery-${item.id}">
-              ${item.name} <span class="amount">(${item.amount})</span>
+              ${escapeHtml(item.name)} <span class="amount">(${escapeHtml(item.amount)})</span>
             </label>
           </div>
-          <span class="checklist-source">${item.sources.join(', ')}</span>
+          <span class="checklist-source">${escapeHtml(item.sources.join(', '))}</span>
         </li>
       `;
     })
@@ -615,9 +698,25 @@ function renderGroceryList() {
       } else {
         state.checkedGroceries.delete(id);
       }
+      saveCheckedGroceries();
       checkbox.closest('.checklist-item').classList.toggle('checked', checkbox.checked);
+      updateGroceryProgress(items);
     });
   });
+}
+
+function updateGroceryProgress(items) {
+  if (!groceryProgress || !items) return;
+
+  const checkedCount = items.filter((item) => state.checkedGroceries.has(item.id)).length;
+
+  if (checkedCount > 0) {
+    groceryProgress.textContent = `${checkedCount} of ${items.length} in cart`;
+    groceryProgress.hidden = false;
+  } else {
+    groceryProgress.hidden = true;
+    groceryProgress.textContent = '';
+  }
 }
 
 // ─── Leftover Magic: detect partial ingredients & suggest bonus recipe ────────
