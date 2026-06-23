@@ -363,6 +363,324 @@ function normalizeKey(name) {
   return name.toLowerCase().trim();
 }
 
+// ─── Grocery list: smart consolidation ────────────────────────────────────────
+
+/** Map variant ingredient names to a single canonical key for grouping. */
+const INGREDIENT_ALIASES = {
+  onion: ['onions', 'red onion', 'yellow onion', 'large onion', 'white onion'],
+  garlic: ['garlic cloves', 'cloves garlic', 'clove garlic', 'fresh garlic'],
+  tomato: ['tomatoes', 'roma tomatoes', 'roma tomato', 'cherry tomatoes', 'cherry tomato'],
+  bell pepper: ['bell peppers', 'red bell pepper', 'yellow bell pepper', 'green bell pepper'],
+  chicken breast: ['chicken breasts', 'chicken thigh', 'chicken thighs'],
+  parmesan: ['parmesan cheese', 'grated parmesan', 'pecorino romano', 'grated pecorino romano'],
+  mozzarella: ['fresh mozzarella', 'mozzarella cheese'],
+  feta cheese: ['feta', 'crumbled feta'],
+  cilantro: ['fresh cilantro', 'cilantro for garnish'],
+  basil: ['fresh basil', 'fresh basil leaves', 'basil leaves'],
+  spinach: ['baby spinach', 'fresh spinach'],
+  rice: ['basmati rice', 'jasmine rice', 'cooked rice', 'white rice', 'arborio rice'],
+  olive oil: ['extra virgin olive oil'],
+  black pepper: ['pepper', 'ground pepper'],
+  salt: ['kosher salt', 'sea salt', 'salt and pepper'],
+  lime: ['limes', 'fresh lime'],
+  lemon: ['lemons', 'fresh lemon'],
+  egg: ['eggs', 'large eggs'],
+  avocado: ['avocados'],
+  cucumber: ['cucumbers', 'english cucumber'],
+  carrot: ['carrots'],
+  mushroom: ['mushrooms', 'cremini mushrooms', 'button mushrooms'],
+  broccoli: ['broccoli florets', 'broccoli head'],
+  chickpeas: ['chickpea', 'garbanzo beans'],
+  black beans: ['black bean'],
+  sour cream: ['crema'],
+  cheese: ['shredded cheese'],
+  tortilla: ['tortillas', 'flour tortillas', 'corn tortillas', 'small flour tortillas'],
+  taco shell: ['taco shells'],
+  ground beef: ['beef', 'minced beef'],
+  shrimp: ['large shrimp', 'prawns'],
+  pork shoulder: ['pork', 'pulled pork'],
+  coconut milk: ['canned coconut milk'],
+  soy sauce: ['low sodium soy sauce'],
+  ginger: ['fresh ginger', 'ginger root'],
+  bean sprout: ['bean sprouts'],
+  sweet potato: ['sweet potatoes'],
+  asparagus: ['asparagus bunch'],
+  dill: ['fresh dill'],
+  walnut: ['walnuts'],
+  peanut: ['peanuts'],
+  pickle: ['pickle chips', 'pickles'],
+  coleslaw: ['coleslaw mix'],
+  dressing: ['caesar dressing'],
+  crouton: ['croutons'],
+  yogurt: ['plain yogurt', 'greek yogurt'],
+  cream: ['heavy cream', 'whipping cream'],
+  wine: ['white wine'],
+  broth: ['vegetable broth', 'chicken broth'],
+  pasta: ['spaghetti'],
+  noodle: ['rice noodles', 'pad thai noodles'],
+  eggplant: ['eggplants', 'aubergine'],
+  zucchini: ['zucchinis'],
+  potato: ['potatoes'],
+  sweet potato: ['sweet potatoes'],
+  corn: ['corn kernels', 'sweet corn'],
+  cabbage: ['cabbage slaw'],
+  sesame oil: ['toasted sesame oil'],
+  sesame seed: ['sesame seeds'],
+  green onion: ['green onions', 'scallions'],
+  curry paste: ['thai curry paste'],
+  fish sauce: ['nam pla'],
+  tamarind: ['tamarind paste'],
+  gochujang: ['korean chili paste'],
+  mirin: ['rice wine mirin'],
+  honey: ['raw honey'],
+  brown sugar: ['sugar'],
+  paprika: ['smoked paprika'],
+  cumin: ['ground cumin'],
+  garam masala: ['masala'],
+  thyme: ['fresh thyme'],
+  oregano: ['dried oregano'],
+  kalamata olive: ['kalamata olives', 'olives'],
+  kalamata olives: ['olives'],
+  romaine lettuce: ['romaine', 'lettuce'],
+  romaine: ['romaine lettuce', 'lettuce head'],
+  pancetta: ['bacon', 'pancetta or bacon'],
+  bean: ['black beans', 'kidney beans'],
+};
+
+const QUALITATIVE_AMOUNT_PATTERN = /^(a\s+)?(pinch|dash|splash|sprinkle|handful|to taste|for garnish|as needed)/i;
+
+function canonicalIngredientKey(name) {
+  const normalized = name.toLowerCase().trim().replace(/\s+/g, ' ');
+
+  for (const [canonical, variants] of Object.entries(INGREDIENT_ALIASES)) {
+    if (normalized === canonical) return canonical;
+    if (variants.includes(normalized)) return canonical;
+  }
+
+  // Match when the canonical name is the core of a longer label (e.g. "fresh cilantro for garnish")
+  for (const [canonical, variants] of Object.entries(INGREDIENT_ALIASES)) {
+    if (normalized.includes(canonical)) return canonical;
+    for (const variant of variants) {
+      if (normalized.includes(variant)) return canonical;
+    }
+  }
+
+  return normalized;
+}
+
+function displayIngredientName(canonicalKey, fallbackName) {
+  if (fallbackName && fallbackName.trim()) {
+    return capitalizeWords(fallbackName.trim());
+  }
+  return capitalizeWords(canonicalKey);
+}
+
+function parseFraction(valueStr) {
+  const trimmed = valueStr.trim();
+  if (trimmed.includes('/')) {
+    const [numerator, denominator] = trimmed.split('/').map(Number);
+    if (denominator) return numerator / denominator;
+  }
+  const num = Number(trimmed);
+  return Number.isFinite(num) ? num : null;
+}
+
+function normalizeUnit(unit) {
+  const u = (unit || '').toLowerCase().trim();
+  const unitMap = {
+    lb: 'lb',
+    lbs: 'lb',
+    pound: 'lb',
+    pounds: 'lb',
+    oz: 'oz',
+    ounce: 'oz',
+    ounces: 'oz',
+    cup: 'cup',
+    cups: 'cup',
+    tbsp: 'tbsp',
+    tablespoon: 'tbsp',
+    tablespoons: 'tbsp',
+    tsp: 'tsp',
+    teaspoon: 'tsp',
+    teaspoons: 'tsp',
+    clove: 'clove',
+    cloves: 'clove',
+    can: 'can',
+    cans: 'can',
+    bunch: 'bunch',
+    bunches: 'bunch',
+    shell: 'shell',
+    shells: 'shell',
+    thigh: 'thigh',
+    thighs: 'thigh',
+    head: 'head',
+    heads: 'head',
+    floret: 'floret',
+    florets: 'floret',
+    ball: 'ball',
+    balls: 'ball',
+    slice: 'slice',
+    slices: 'slice',
+    bun: 'bun',
+    buns: 'bun',
+    bag: 'bag',
+    bags: 'bag',
+  };
+  return unitMap[u] || u || 'count';
+}
+
+function parseAmount(amountStr) {
+  const raw = amountStr.trim();
+  const lower = raw.toLowerCase();
+
+  if (!raw) return { type: 'unknown', raw };
+
+  if (QUALITATIVE_AMOUNT_PATTERN.test(lower)) {
+    return { type: 'qualitative', raw };
+  }
+
+  const numericPattern = /^([\d./]+)\s*(lbs?|pounds?|oz|ounces?|cups?|tbsp|tsp|teaspoons?|tablespoons?|cloves?|cans?|bunch(?:es)?|shells?|thighs?|head|florets?|balls?|slices?|buns?|bags?)?\s*(.*)$/i;
+  const match = lower.match(numericPattern);
+
+  if (!match) {
+    return { type: 'unknown', raw };
+  }
+
+  const value = parseFraction(match[1]);
+  if (value === null) return { type: 'unknown', raw };
+
+  const unit = normalizeUnit(match[2]);
+  const descriptor = (match[3] || '').trim();
+
+  return {
+    type: 'numeric',
+    value,
+    unit,
+    descriptor,
+    raw,
+  };
+}
+
+function formatNumber(value) {
+  if (Number.isInteger(value) || Math.abs(value % 1) < 0.001) {
+    return String(Math.round(value));
+  }
+  if (value === 0.5) return '1/2';
+  if (value === 0.25) return '1/4';
+  if (value === 0.75) return '3/4';
+  if (value === 1.5) return '1 1/2';
+  return String(value);
+}
+
+function formatUnitLabel(unit, total) {
+  const pluralMap = {
+    cup: 'cups',
+    tbsp: 'tbsp',
+    tsp: 'tsp',
+    clove: 'cloves',
+    can: 'cans',
+    bunch: 'bunches',
+    shell: 'shells',
+    thigh: 'thighs',
+    head: 'heads',
+    floret: 'florets',
+    ball: 'balls',
+    slice: 'slices',
+    bun: 'buns',
+    bag: 'bags',
+    lb: 'lbs',
+    oz: 'oz',
+  };
+
+  if (total === 1) return unit === 'count' ? '' : unit;
+  return pluralMap[unit] || unit;
+}
+
+function pluralizeName(name, count) {
+  const lower = name.toLowerCase();
+  if (count === 1) return lower;
+
+  if (lower.endsWith('y') && !lower.endsWith('ey')) {
+    return `${lower.slice(0, -1)}ies`;
+  }
+  if (lower.endsWith('s') || lower.endsWith('x') || lower.endsWith('ch')) {
+    return lower;
+  }
+  return `${lower}s`;
+}
+
+function combineParsedAmounts(parsedAmounts, displayName) {
+  const numericBuckets = new Map();
+  const qualitative = [];
+  const unknown = [];
+
+  parsedAmounts.forEach((parsed) => {
+    if (parsed.type === 'qualitative') {
+      qualitative.push(parsed.raw);
+      return;
+    }
+    if (parsed.type === 'unknown') {
+      unknown.push(parsed.raw);
+      return;
+    }
+
+    const bucketKey = `${parsed.unit}::${parsed.descriptor || ''}`;
+    if (!numericBuckets.has(bucketKey)) {
+      numericBuckets.set(bucketKey, {
+        unit: parsed.unit,
+        descriptor: parsed.descriptor,
+        total: 0,
+      });
+    }
+    numericBuckets.get(bucketKey).total += parsed.value;
+  });
+
+  const combinedParts = [];
+
+  numericBuckets.forEach((bucket) => {
+    const total = bucket.total;
+    const unitLabel = formatUnitLabel(bucket.unit, total);
+
+    if (bucket.unit === 'count') {
+      const namePart = pluralizeName(displayName, total);
+      if (bucket.descriptor) {
+        combinedParts.push(`${formatNumber(total)} ${bucket.descriptor} ${namePart}`);
+      } else {
+        combinedParts.push(`${formatNumber(total)} ${namePart}`);
+      }
+    } else {
+      combinedParts.push(`${formatNumber(total)} ${unitLabel}`.trim());
+      if (bucket.descriptor) {
+        combinedParts[combinedParts.length - 1] += ` ${bucket.descriptor}`;
+      }
+    }
+  });
+
+  if (qualitative.length > 0) {
+    const uniqueQualitative = [...new Set(qualitative)];
+    combinedParts.push(uniqueQualitative.join(' + '));
+  }
+
+  if (unknown.length > 0) {
+    combinedParts.push(...[...new Set(unknown)]);
+  }
+
+  return combinedParts.join(' + ');
+}
+
+function groceryItemId(canonicalKey) {
+  return canonicalKey.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+function pruneCheckedGroceries(validIds) {
+  const validSet = new Set(validIds);
+  state.checkedGroceries.forEach((id) => {
+    if (!validSet.has(id)) {
+      state.checkedGroceries.delete(id);
+    }
+  });
+}
+
 function getSelectedMeals() {
   return getAllMeals().filter((meal) => state.selectedMealIds.has(meal.id));
 }
@@ -666,31 +984,44 @@ function buildGroceryItems() {
 
   getSelectedMeals().forEach((meal) => {
     meal.ingredients.forEach((ingredient) => {
-      const key = normalizeKey(ingredient.name);
+      const canonicalKey = canonicalIngredientKey(ingredient.name);
 
-      if (!ingredientMap.has(key)) {
-        ingredientMap.set(key, {
-          name: ingredient.name,
-          amounts: [],
+      if (!ingredientMap.has(canonicalKey)) {
+        ingredientMap.set(canonicalKey, {
+          canonicalKey,
+          displayName: displayIngredientName(canonicalKey, ingredient.name),
+          parsedAmounts: [],
+          rawAmounts: [],
           sources: [],
         });
       }
 
-      const entry = ingredientMap.get(key);
-      entry.amounts.push(ingredient.amount);
+      const entry = ingredientMap.get(canonicalKey);
+      entry.parsedAmounts.push(parseAmount(ingredient.amount));
+      entry.rawAmounts.push(ingredient.amount);
+
       if (!entry.sources.includes(meal.name)) {
         entry.sources.push(meal.name);
       }
     });
   });
 
-  return Array.from(ingredientMap.values()).map((entry) => ({
-    id: entry.name.toLowerCase().replace(/\s+/g, '-'),
-    name: entry.name,
-    amount: entry.amounts.join(' + '),
-    sources: entry.sources,
-    image: getIngredientImage(entry.name),
-  }));
+  const items = Array.from(ingredientMap.values()).map((entry) => {
+    const combinedAmount = combineParsedAmounts(entry.parsedAmounts, entry.displayName);
+    const id = groceryItemId(entry.canonicalKey);
+
+    return {
+      id,
+      name: entry.displayName,
+      amount: combinedAmount,
+      sources: entry.sources,
+      image: getIngredientImage(entry.displayName),
+    };
+  });
+
+  pruneCheckedGroceries(items.map((item) => item.id));
+
+  return items.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 function renderGroceryList() {
@@ -751,7 +1082,7 @@ function renderGroceryList() {
       }
       saveCheckedGroceries();
       checkbox.closest('.checklist-item').classList.toggle('checked', checkbox.checked);
-      updateGroceryProgress(items);
+      updateGroceryProgress(buildGroceryItems());
     });
   });
 }
