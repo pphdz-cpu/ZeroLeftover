@@ -1,13 +1,50 @@
 /**
- * Zero Leftover — starting framework
- * Meal selection, grocery list generation, and leftover suggestions.
+ * Zero Leftover — meal selection, grocery list, and leftover suggestions.
  */
+
+const UNSPLASH = 'https://images.unsplash.com';
+
+const INGREDIENT_IMAGES = {
+  pasta: `${UNSPLASH}/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=200&q=80`,
+  'cherry tomatoes': `${UNSPLASH}/photo-1592841200221-a6898f307baa?auto=format&fit=crop&w=200&q=80`,
+  zucchini: `${UNSPLASH}/photo-1592840600398-77cbf1603573?auto=format&fit=crop&w=200&q=80`,
+  'olive oil': `${UNSPLASH}/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=200&q=80`,
+  garlic: `${UNSPLASH}/photo-1601493701235-5850a882b24e?auto=format&fit=crop&w=200&q=80`,
+  parmesan: `${UNSPLASH}/photo-1486297678162-eb2a19b0a32d?auto=format&fit=crop&w=200&q=80`,
+  'chicken breast': `${UNSPLASH}/photo-1604503468506-440c6ded15f9?auto=format&fit=crop&w=200&q=80`,
+  'bell peppers': `${UNSPLASH}/photo-1563565375-f3fdfdbefa83?auto=format&fit=crop&w=200&q=80`,
+  broccoli: `${UNSPLASH}/photo-1459411621453-7b03977f4bfc?auto=format&fit=crop&w=200&q=80`,
+  'soy sauce': `${UNSPLASH}/photo-1582878826629-29ae7a3a1f12?auto=format&fit=crop&w=200&q=80`,
+  ginger: `${UNSPLASH}/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=200&q=80`,
+  rice: `${UNSPLASH}/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=200&q=80`,
+  spinach: `${UNSPLASH}/photo-1576040916760-2b55cfe63577?auto=format&fit=crop&w=200&q=80`,
+  cucumber: `${UNSPLASH}/photo-1449305177337-042093f179e3?auto=format&fit=crop&w=200&q=80`,
+  'feta cheese': `${UNSPLASH}/photo-1486297678162-eb2a19b0a32d?auto=format&fit=crop&w=200&q=80`,
+  lemon: `${UNSPLASH}/photo-1590502593747-93fa29117513?auto=format&fit=crop&w=200&q=80`,
+  walnuts: `${UNSPLASH}/photo-1550254470-447d8868fbf6?auto=format&fit=crop&w=200&q=80`,
+  'ground beef': `${UNSPLASH}/photo-1603048297172-c9254474d9c2?auto=format&fit=crop&w=200&q=80`,
+  'taco shells': `${UNSPLASH}/photo-1565299585323-38174c4aabaa?auto=format&fit=crop&w=200&q=80`,
+  onion: `${UNSPLASH}/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=200&q=80`,
+  cilantro: `${UNSPLASH}/photo-1618375569909-fcbac6d0c114?auto=format&fit=crop&w=200&q=80`,
+  'sour cream': `${UNSPLASH}/photo-1628088062859-63c3cd9cd64a?auto=format&fit=crop&w=200&q=80`,
+  lime: `${UNSPLASH}/photo-1515589666096-783ea1e4cdf7?auto=format&fit=crop&w=200&q=80`,
+  'coconut milk': `${UNSPLASH}/photo-1584270354949-c26b0d42b0b1?auto=format&fit=crop&w=200&q=80`,
+  'sweet potato': `${UNSPLASH}/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=200&q=80`,
+  chickpeas: `${UNSPLASH}/photo-1516684669134-48d8d64f3998?auto=format&fit=crop&w=200&q=80`,
+  'curry paste': `${UNSPLASH}/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=200&q=80`,
+  'jasmine rice': `${UNSPLASH}/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=200&q=80`,
+  'salmon fillets': `${UNSPLASH}/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=200&q=80`,
+  asparagus: `${UNSPLASH}/photo-1615485925615-df9e065a5c0c?auto=format&fit=crop&w=200&q=80`,
+  dill: `${UNSPLASH}/photo-1618375569909-fcbac6d0c114?auto=format&fit=crop&w=200&q=80`,
+};
+
+const DEFAULT_INGREDIENT_IMAGE = `${UNSPLASH}/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=200&q=80`;
 
 const MEALS = [
   {
     id: 'pasta-primavera',
     name: 'Pasta Primavera',
-    icon: '🍝',
+    image: `${UNSPLASH}/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=800&q=80`,
     servings: 4,
     ingredients: [
       { name: 'Pasta', amount: '1 lb' },
@@ -26,7 +63,7 @@ const MEALS = [
   {
     id: 'chicken-stir-fry',
     name: 'Chicken Stir-Fry',
-    icon: '🍗',
+    image: `${UNSPLASH}/photo-1603133872877-684f208fb84b?auto=format&fit=crop&w=800&q=80`,
     servings: 4,
     ingredients: [
       { name: 'Chicken breast', amount: '1.5 lbs' },
@@ -45,7 +82,7 @@ const MEALS = [
   {
     id: 'spinach-salad',
     name: 'Spinach Power Salad',
-    icon: '🥗',
+    image: `${UNSPLASH}/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80`,
     servings: 2,
     ingredients: [
       { name: 'Spinach', amount: '1 bag (10 oz)' },
@@ -63,7 +100,7 @@ const MEALS = [
   {
     id: 'taco-night',
     name: 'Taco Night',
-    icon: '🌮',
+    image: `${UNSPLASH}/photo-1565299585323-38174c4aabaa?auto=format&fit=crop&w=800&q=80`,
     servings: 4,
     ingredients: [
       { name: 'Ground beef', amount: '1 lb' },
@@ -82,7 +119,7 @@ const MEALS = [
   {
     id: 'veggie-curry',
     name: 'Veggie Curry',
-    icon: '🍛',
+    image: `${UNSPLASH}/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=800&q=80`,
     servings: 4,
     ingredients: [
       { name: 'Coconut milk', amount: '1 can' },
@@ -101,7 +138,7 @@ const MEALS = [
   {
     id: 'salmon-sheet-pan',
     name: 'Sheet Pan Salmon',
-    icon: '🐟',
+    image: `${UNSPLASH}/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80`,
     servings: 2,
     ingredients: [
       { name: 'Salmon fillets', amount: '2' },
@@ -122,7 +159,7 @@ const BONUS_RECIPES = [
   {
     id: 'green-goddess-omelette',
     title: 'Green Goddess Omelette',
-    icon: '🍳',
+    image: `${UNSPLASH}/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=900&q=80`,
     description:
       'A quick skillet omelette that folds in leftover greens, herbs, and cheese for a zero-waste breakfast or lunch.',
     tags: ['15 min', 'Breakfast', 'Uses leftovers'],
@@ -132,7 +169,7 @@ const BONUS_RECIPES = [
   {
     id: 'veggie-frittata',
     title: 'Rainbow Veggie Frittata',
-    icon: '🥘',
+    image: `${UNSPLASH}/photo-1608039829572-7851f79148b0?auto=format&fit=crop&w=900&q=80`,
     description:
       'Bake whatever vegetables you have left into a golden frittata — perfect for peppers, broccoli, and tomatoes.',
     tags: ['30 min', 'One pan', 'Family size'],
@@ -142,7 +179,7 @@ const BONUS_RECIPES = [
   {
     id: 'spinach-pesto-pasta',
     title: 'Spinach Pesto Pasta',
-    icon: '🌿',
+    image: `${UNSPLASH}/photo-1476124369491-e7addf5db371?auto=format&fit=crop&w=900&q=80`,
     description:
       'Blend leftover spinach and herbs into a bright pesto, then toss with pasta for a second dinner from the same groceries.',
     tags: ['20 min', 'Dinner', 'Sauce hack'],
@@ -152,7 +189,7 @@ const BONUS_RECIPES = [
   {
     id: 'coconut-veggie-soup',
     title: 'Coconut Veggie Soup',
-    icon: '🥣',
+    image: `${UNSPLASH}/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=900&q=80`,
     description:
       'Simmer leftover coconut milk with sweet potato and chickpeas for a cozy soup that clears the fridge.',
     tags: ['25 min', 'Soup', 'Comfort food'],
@@ -179,6 +216,11 @@ const leftoverEmpty = document.getElementById('leftover-empty');
 const leftoverPanel = document.getElementById('leftover-panel');
 const leftoverList = document.getElementById('leftover-list');
 const recipeSpotlight = document.getElementById('recipe-spotlight');
+
+function getIngredientImage(name) {
+  const key = name.toLowerCase();
+  return INGREDIENT_IMAGES[key] || DEFAULT_INGREDIENT_IMAGE;
+}
 
 function init() {
   renderMealGrid();
@@ -239,8 +281,14 @@ function renderMealGrid() {
       >
         <span class="meal-check" aria-hidden="true">✓</span>
         <div class="meal-photo">
-          <span class="meal-photo-icon" aria-hidden="true">${meal.icon}</span>
-          <span class="meal-photo-label">Photo</span>
+          <img
+            src="${meal.image}"
+            alt="${meal.name}"
+            width="800"
+            height="600"
+            loading="lazy"
+          >
+          <span class="meal-photo-overlay" aria-hidden="true"></span>
         </div>
         <div class="meal-info">
           <h3 class="meal-name">${meal.name}</h3>
@@ -295,6 +343,7 @@ function buildGroceryItems() {
     name: entry.name,
     amount: entry.amounts.join(' + '),
     sources: entry.sources,
+    image: getIngredientImage(entry.name),
   }));
 }
 
@@ -320,7 +369,19 @@ function renderGroceryList() {
             data-grocery-id="${item.id}"
             ${checked ? 'checked' : ''}
           >
-          <label for="grocery-${item.id}">${item.name} <span class="amount">(${item.amount})</span></label>
+          <img
+            class="ingredient-thumb"
+            src="${item.image}"
+            alt="${item.name}"
+            width="52"
+            height="52"
+            loading="lazy"
+          >
+          <div class="checklist-content">
+            <label for="grocery-${item.id}">
+              ${item.name} <span class="amount">(${item.amount})</span>
+            </label>
+          </div>
           <span class="checklist-source">${item.sources.join(', ')}</span>
         </li>
       `;
@@ -397,14 +458,25 @@ function renderLeftoverMagic() {
   const recipe = findBestRecipe(leftovers);
 
   leftoverList.innerHTML = leftovers
-    .map(
-      (item) => `
+    .map((item) => {
+      const image = getIngredientImage(item.name);
+      return `
         <li>
-          <span class="leftover-amount">${item.remaining}</span>
-          <span class="leftover-name">${item.name}</span>
+          <img
+            class="leftover-thumb"
+            src="${image}"
+            alt="${item.name}"
+            width="48"
+            height="48"
+            loading="lazy"
+          >
+          <div class="leftover-details">
+            <span class="leftover-amount">${item.remaining}</span>
+            <span class="leftover-name">${item.name}</span>
+          </div>
         </li>
-      `
-    )
+      `;
+    })
     .join('');
 
   const matchedLeftovers = leftovers.filter((item) =>
@@ -415,7 +487,16 @@ function renderLeftoverMagic() {
   );
 
   recipeSpotlight.innerHTML = `
-    <div class="recipe-photo" aria-hidden="true">${recipe.icon}</div>
+    <div class="recipe-photo">
+      <img
+        src="${recipe.image}"
+        alt="${recipe.title}"
+        width="900"
+        height="560"
+        loading="lazy"
+      >
+      <span class="recipe-photo-badge">Bonus recipe</span>
+    </div>
     <div class="recipe-body">
       <h3 class="recipe-title">${recipe.title}</h3>
       <p class="recipe-desc">${recipe.description}</p>
