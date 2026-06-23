@@ -57,7 +57,46 @@
         <button type="button" class="btn btn-secondary btn-sm" id="clear-selection">Clear all</button>
       </div>
 
-      <div class="meal-grid" id="meal-grid" role="list"></div>
+      <div class="meal-selector-layout">
+        <aside class="add-meal-panel" aria-labelledby="add-meal-heading">
+          <div class="add-meal-panel-header">
+            <span class="add-meal-icon" aria-hidden="true">➕</span>
+            <h2 id="add-meal-heading">Add your own meal</h2>
+          </div>
+          <p class="add-meal-hint">Create a custom meal card — it works just like the samples below.</p>
+
+          <form class="add-meal-form" id="add-meal-form" novalidate>
+            <div class="form-field">
+              <label for="meal-name-input">Meal Name</label>
+              <input
+                type="text"
+                id="meal-name-input"
+                name="mealName"
+                placeholder="e.g. Turkey Wraps"
+                autocomplete="off"
+                required
+              >
+            </div>
+
+            <div class="form-field">
+              <label for="meal-ingredients-input">Ingredients <span class="label-hint">(separated by commas)</span></label>
+              <textarea
+                id="meal-ingredients-input"
+                name="ingredients"
+                rows="4"
+                placeholder="e.g. 1 lb ground turkey, spinach, 1 onion, tortillas, salsa"
+                required
+              ></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-add-meal">Add Meal</button>
+            <p class="form-feedback form-feedback--error" id="add-meal-error" hidden></p>
+            <p class="form-feedback form-feedback--success" id="add-meal-success" hidden></p>
+          </form>
+        </aside>
+
+        <div class="meal-grid" id="meal-grid" role="list"></div>
+      </div>
     </section>
 
     <!-- Grocery List -->

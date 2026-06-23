@@ -331,6 +331,154 @@ img {
 
 /* ── Meal Selector ── */
 
+/* ── Meal Selector ── */
+
+.meal-selector-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .meal-selector-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Add meal form panel */
+
+.add-meal-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+  position: sticky;
+  top: calc(var(--header-height) + 1rem);
+}
+
+.add-meal-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.35rem;
+}
+
+.add-meal-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--mint-100);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+}
+
+.add-meal-panel h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--mint-900);
+  letter-spacing: -0.01em;
+}
+
+.add-meal-hint {
+  margin: 0 0 1.25rem;
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.add-meal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-field label {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--mint-800);
+}
+
+.label-hint {
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.form-field input,
+.form-field textarea {
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background: var(--mint-50);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 0.7rem 0.85rem;
+  transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+}
+
+.form-field input::placeholder,
+.form-field textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 0.85;
+}
+
+.form-field input:hover,
+.form-field textarea:hover {
+  border-color: var(--mint-300);
+}
+
+.form-field input:focus,
+.form-field textarea:focus {
+  outline: none;
+  border-color: var(--mint-500);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(67, 168, 92, 0.15);
+}
+
+.form-field textarea {
+  resize: vertical;
+  min-height: 110px;
+}
+
+.btn-add-meal {
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 1.0625rem;
+  padding: 0.8rem 1.25rem;
+}
+
+.form-feedback {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radius-sm);
+  line-height: 1.4;
+}
+
+.form-feedback--error {
+  color: #b42318;
+  background: #fef3f2;
+  border: 1px solid #fecdca;
+}
+
+.form-feedback--success {
+  color: var(--mint-800);
+  background: var(--mint-100);
+  border: 1px solid var(--mint-300);
+}
+
 .selection-summary {
   display: flex;
   align-items: center;
@@ -470,6 +618,27 @@ img {
 .meal-card.selected .meal-check {
   opacity: 1;
   transform: scale(1);
+}
+
+.meal-badge {
+  position: absolute;
+  top: 0.85rem;
+  left: 0.85rem;
+  z-index: 2;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--mint-800);
+  background: rgba(255, 255, 255, 0.92);
+  padding: 0.25rem 0.55rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-xs);
+}
+
+.meal-card.selected .meal-badge {
+  background: rgba(255, 255, 255, 0.95);
 }
 
 /* ── Empty states ── */

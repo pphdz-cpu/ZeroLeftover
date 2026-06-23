@@ -37,6 +37,9 @@ const INGREDIENT_IMAGES = {
 
 const DEFAULT_INGREDIENT_IMAGE = `${UNSPLASH}/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=200&q=80`;
 
+// Default placeholder for user-created meals (generic plated food)
+const CUSTOM_MEAL_PLACEHOLDER = `${UNSPLASH}/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80`;
+
 // ─── Sample meals (behind the scenes data) ────────────────────────────────────
 //
 // Each ingredient has:
@@ -148,6 +151,7 @@ const BONUS_RECIPES = [
 const state = {
   selectedMealIds: new Set(),
   checkedGroceries: new Set(),
+  customMeals: [],
 };
 
 // ─── DOM references ───────────────────────────────────────────────────────────
@@ -166,8 +170,32 @@ const leftoverPanel = document.getElementById('leftover-panel');
 const leftoverList = document.getElementById('leftover-list');
 const leftoverCount = document.getElementById('leftover-count');
 const recipeSpotlight = document.getElementById('recipe-spotlight');
+const addMealForm = document.getElementById('add-meal-form');
+const mealNameInput = document.getElementById('meal-name-input');
+const mealIngredientsInput = document.getElementById('meal-ingredients-input');
+const addMealError = document.getElementById('add-meal-error');
+const addMealSuccess = document.getElementById('add-meal-success');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function capitalizeWords(str) {
+  return str
+    .split(/\s+/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
+function getAllMeals() {
+  return [...MEALS, ...state.customMeals];
+}
 
 function getIngredientImage(name) {
   return INGREDIENT_IMAGES[name.toLowerCase()] || DEFAULT_INGREDIENT_IMAGE;
@@ -178,7 +206,135 @@ function normalizeKey(name) {
 }
 
 function getSelectedMeals() {
-  return MEALS.filter((meal) => state.selectedMealIds.has(meal.id));
+  return getAllMeals().filter((meal) => state.selectedMealIds.has(meal.id));
+}
+
+// ─── Custom meals ─────────────────────────────────────────────────────────────
+
+/**
+ * Parse "2 cups spinach" → { amount: "2 cups", name: "Spinach" }
+ * Plain "onion" → { amount: "1", name: "Onion" }
+ */
+function parseIngredientInput(raw) {
+  const text = raw.trim();
+  if (!text) return null;
+
+  const quantityPattern = /^([\d./]+\s*(?:lbs?|pounds?|oz|ounces?|cups?|tbsp|tsp|teaspoons?|tablespoons?|cloves?|cans?|bunch(?:es)?|large|medium|small|bags?|shells?|slices?)?\s+)(.+)$/i;
+  const match = text.match(quantityPattern);
+
+  if (match) {
+    return {
+      amount: match[1].trim(),
+      name: capitalizeWords(match[2].trim()),
+    };
+  }
+
+  return {
+    amount: '1',
+    name: capitalizeWords(text),
+  };
+}
+
+function buildCustomIngredient(raw) {
+  const parsed = parseIngredientInput(raw);
+  if (!parsed) return null;
+
+  const { name, amount } = parsed;
+  const leftoverLabel = amount === '1'
+    ? `half ${name.toLowerCase()}`
+    : `half ${amount} ${name.toLowerCase()}`;
+
+  return {
+    name,
+    amount,
+    usedFraction: 0.5,
+    leftoverLabel,
+  };
+}
+
+function createCustomMeal(name, ingredientsText) {
+  const ingredientParts = ingredientsText
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  const ingredients = ingredientParts
+    .map(buildCustomIngredient)
+    .filter(Boolean);
+
+  if (ingredients.length === 0) return null;
+
+  const slug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 30);
+
+  return {
+    id: `custom-${slug || 'meal'}-${Date.now()}`,
+    name: name.trim(),
+    image: CUSTOM_MEAL_PLACEHOLDER,
+    servings: Math.max(2, Math.ceil(ingredients.length / 3)),
+    isCustom: true,
+    ingredients,
+  };
+}
+
+function showFormFeedback(element, message) {
+  addMealError.hidden = true;
+  addMealSuccess.hidden = true;
+
+  if (!element) return;
+
+  element.textContent = message;
+  element.hidden = false;
+}
+
+function clearFormFeedback() {
+  addMealError.hidden = true;
+  addMealSuccess.hidden = true;
+  addMealError.textContent = '';
+  addMealSuccess.textContent = '';
+}
+
+function handleAddMeal(event) {
+  event.preventDefault();
+  clearFormFeedback();
+
+  const name = mealNameInput.value.trim();
+  const ingredientsText = mealIngredientsInput.value.trim();
+
+  if (!name) {
+    showFormFeedback(addMealError, 'Please enter a meal name.');
+    mealNameInput.focus();
+    return;
+  }
+
+  if (!ingredientsText) {
+    showFormFeedback(addMealError, 'Please enter at least one ingredient (comma-separated).');
+    mealIngredientsInput.focus();
+    return;
+  }
+
+  const meal = createCustomMeal(name, ingredientsText);
+  if (!meal) {
+    showFormFeedback(addMealError, 'Could not parse ingredients. Try separating them with commas.');
+    return;
+  }
+
+  state.customMeals.push(meal);
+  mealNameInput.value = '';
+  mealIngredientsInput.value = '';
+
+  showFormFeedback(addMealSuccess, `"${meal.name}" added! Click the card to select it.`);
+  updateAllViews();
+
+  const newCard = mealGrid.querySelector(`[data-meal-id="${meal.id}"]`);
+  if (newCard) {
+    newCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  setTimeout(clearFormFeedback, 4000);
 }
 
 // ─── Init & navigation ────────────────────────────────────────────────────────
@@ -188,7 +344,13 @@ function init() {
   bindNavigation();
   bindMealActions();
   bindGroceryActions();
+  bindAddMealForm();
   updateAllViews();
+}
+
+function bindAddMealForm() {
+  if (!addMealForm) return;
+  addMealForm.addEventListener('submit', handleAddMeal);
 }
 
 function bindNavigation() {
@@ -231,24 +393,30 @@ function bindGroceryActions() {
 // ─── Meal selector: click to select / deselect ────────────────────────────────
 
 function renderMealGrid() {
-  mealGrid.innerHTML = MEALS.map((meal) => {
+  mealGrid.innerHTML = getAllMeals().map((meal) => {
     const selected = state.selectedMealIds.has(meal.id);
+    const customClass = meal.isCustom ? ' meal-card--custom' : '';
+    const customBadge = meal.isCustom
+      ? '<span class="meal-badge">Your meal</span>'
+      : '';
+
     return `
       <button
         type="button"
-        class="meal-card${selected ? ' selected' : ''}"
+        class="meal-card${selected ? ' selected' : ''}${customClass}"
         data-meal-id="${meal.id}"
         role="listitem"
         aria-pressed="${selected}"
-        aria-label="${meal.name}${selected ? ' (selected)' : ''}"
+        aria-label="${escapeHtml(meal.name)}${selected ? ' (selected)' : ''}"
       >
+        ${customBadge}
         <span class="meal-check" aria-hidden="true">✓</span>
         <div class="meal-photo">
-          <img src="${meal.image}" alt="${meal.name}" width="800" height="600" loading="lazy">
+          <img src="${meal.image}" alt="${escapeHtml(meal.name)}" width="800" height="600" loading="lazy">
           <span class="meal-photo-overlay" aria-hidden="true"></span>
         </div>
         <div class="meal-info">
-          <h3 class="meal-name">${meal.name}</h3>
+          <h3 class="meal-name">${escapeHtml(meal.name)}</h3>
           <p class="meal-meta">${meal.ingredients.length} ingredients · ${meal.servings} servings</p>
         </div>
       </button>
