@@ -52,7 +52,7 @@
       <div class="selection-summary" id="selection-summary" hidden>
         <div class="selection-summary-text">
           <span class="selection-dot" aria-hidden="true"></span>
-          <span id="selection-count">0 meals selected</span>
+          <span id="selection-count" aria-live="polite">0 meals selected</span>
         </div>
         <button type="button" class="btn btn-secondary btn-sm" id="clear-selection">Clear all</button>
       </div>
@@ -89,7 +89,7 @@
         <div class="panel-toolbar">
           <div class="panel-toolbar-left">
             <span class="panel-icon" aria-hidden="true">📋</span>
-            <span id="grocery-item-count">0 items</span>
+            <span id="grocery-item-count" aria-live="polite">0 items</span>
           </div>
           <button type="button" class="btn btn-secondary btn-sm" id="uncheck-all">Uncheck all</button>
         </div>
@@ -128,8 +128,8 @@
             <div class="card-top">
               <span class="card-icon" aria-hidden="true">🥬</span>
               <div>
-                <h2>Estimated leftovers</h2>
-                <p class="card-hint">Typical portions left after your selected meals.</p>
+                <h2>Detected leftovers</h2>
+                <p class="card-hint" id="leftover-count" aria-live="polite">Partial ingredients from your selected meals.</p>
               </div>
             </div>
             <ul class="leftover-list" id="leftover-list" role="list"></ul>

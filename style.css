@@ -725,6 +725,27 @@ img {
   font-size: 1rem;
 }
 
+.leftover-from {
+  display: block;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+.leftover-empty-msg {
+  padding: 1rem 0;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  list-style: none;
+}
+
+.recipe-fallback {
+  padding: 1.25rem;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  text-align: center;
+}
+
 /* Recipe spotlight */
 
 .recipe-spotlight {

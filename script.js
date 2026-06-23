@@ -1,207 +1,156 @@
 /**
- * Zero Leftover — meal selection, grocery list, and leftover suggestions.
+ * Zero Leftover — interactive meal planning logic
+ *
+ * Flow:
+ *  1. User clicks meal cards → toggles selection (highlighted state)
+ *  2. Selected meals → combined grocery list (ingredients merged by name)
+ *  3. Ingredients with partial usage → detected leftovers → matched bonus recipe
  */
 
 const UNSPLASH = 'https://images.unsplash.com';
 
+// ─── Ingredient photo lookup (Unsplash) ───────────────────────────────────────
+
 const INGREDIENT_IMAGES = {
-  pasta: `${UNSPLASH}/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=200&q=80`,
-  'cherry tomatoes': `${UNSPLASH}/photo-1592841200221-a6898f307baa?auto=format&fit=crop&w=200&q=80`,
-  zucchini: `${UNSPLASH}/photo-1592840600398-77cbf1603573?auto=format&fit=crop&w=200&q=80`,
-  'olive oil': `${UNSPLASH}/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=200&q=80`,
+  spaghetti: `${UNSPLASH}/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=200&q=80`,
+  'ground beef': `${UNSPLASH}/photo-1603048297172-c9254474d9c2?auto=format&fit=crop&w=200&q=80`,
+  onion: `${UNSPLASH}/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=200&q=80`,
   garlic: `${UNSPLASH}/photo-1601493701235-5850a882b24e?auto=format&fit=crop&w=200&q=80`,
+  'tomato sauce': `${UNSPLASH}/photo-1592841200221-a6898f307baa?auto=format&fit=crop&w=200&q=80`,
   parmesan: `${UNSPLASH}/photo-1486297678162-eb2a19b0a32d?auto=format&fit=crop&w=200&q=80`,
   'chicken breast': `${UNSPLASH}/photo-1604503468506-440c6ded15f9?auto=format&fit=crop&w=200&q=80`,
-  'bell peppers': `${UNSPLASH}/photo-1563565375-f3fdfdbefa83?auto=format&fit=crop&w=200&q=80`,
-  broccoli: `${UNSPLASH}/photo-1459411621453-7b03977f4bfc?auto=format&fit=crop&w=200&q=80`,
-  'soy sauce': `${UNSPLASH}/photo-1582878826629-29ae7a3a1f12?auto=format&fit=crop&w=200&q=80`,
-  ginger: `${UNSPLASH}/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=200&q=80`,
-  rice: `${UNSPLASH}/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=200&q=80`,
   spinach: `${UNSPLASH}/photo-1576040916760-2b55cfe63577?auto=format&fit=crop&w=200&q=80`,
   cucumber: `${UNSPLASH}/photo-1449305177337-042093f179e3?auto=format&fit=crop&w=200&q=80`,
-  'feta cheese': `${UNSPLASH}/photo-1486297678162-eb2a19b0a32d?auto=format&fit=crop&w=200&q=80`,
+  'cherry tomatoes': `${UNSPLASH}/photo-1592841200221-a6898f307baa?auto=format&fit=crop&w=200&q=80`,
+  'olive oil': `${UNSPLASH}/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=200&q=80`,
   lemon: `${UNSPLASH}/photo-1590502593747-93fa29117513?auto=format&fit=crop&w=200&q=80`,
-  walnuts: `${UNSPLASH}/photo-1550254470-447d8868fbf6?auto=format&fit=crop&w=200&q=80`,
-  'ground beef': `${UNSPLASH}/photo-1603048297172-c9254474d9c2?auto=format&fit=crop&w=200&q=80`,
   'taco shells': `${UNSPLASH}/photo-1565299585323-38174c4aabaa?auto=format&fit=crop&w=200&q=80`,
-  onion: `${UNSPLASH}/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=200&q=80`,
+  'black beans': `${UNSPLASH}/photo-1516684669134-48d8d64f3998?auto=format&fit=crop&w=200&q=80`,
+  'bell peppers': `${UNSPLASH}/photo-1563565375-f3fdfdbefa83?auto=format&fit=crop&w=200&q=80`,
   cilantro: `${UNSPLASH}/photo-1618375569909-fcbac6d0c114?auto=format&fit=crop&w=200&q=80`,
-  'sour cream': `${UNSPLASH}/photo-1628088062859-63c3cd9cd64a?auto=format&fit=crop&w=200&q=80`,
   lime: `${UNSPLASH}/photo-1515589666096-783ea1e4cdf7?auto=format&fit=crop&w=200&q=80`,
-  'coconut milk': `${UNSPLASH}/photo-1584270354949-c26b0d42b0b1?auto=format&fit=crop&w=200&q=80`,
-  'sweet potato': `${UNSPLASH}/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=200&q=80`,
-  chickpeas: `${UNSPLASH}/photo-1516684669134-48d8d64f3998?auto=format&fit=crop&w=200&q=80`,
-  'curry paste': `${UNSPLASH}/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=200&q=80`,
+  avocado: `${UNSPLASH}/photo-1523049673857-eb18fc1d7b2a?auto=format&fit=crop&w=200&q=80`,
   'jasmine rice': `${UNSPLASH}/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=200&q=80`,
-  'salmon fillets': `${UNSPLASH}/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=200&q=80`,
-  asparagus: `${UNSPLASH}/photo-1615485925615-df9e065a5c0c?auto=format&fit=crop&w=200&q=80`,
-  dill: `${UNSPLASH}/photo-1618375569909-fcbac6d0c114?auto=format&fit=crop&w=200&q=80`,
+  chickpeas: `${UNSPLASH}/photo-1516684669134-48d8d64f3998?auto=format&fit=crop&w=200&q=80`,
+  'feta cheese': `${UNSPLASH}/photo-1486297678162-eb2a19b0a32d?auto=format&fit=crop&w=200&q=80`,
 };
 
 const DEFAULT_INGREDIENT_IMAGE = `${UNSPLASH}/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=200&q=80`;
 
+// ─── Sample meals (behind the scenes data) ────────────────────────────────────
+//
+// Each ingredient has:
+//   name, amount (display), usedFraction (0–1 of what you buy),
+//   leftoverLabel (what's left, shown when usedFraction < 1)
+
 const MEALS = [
   {
-    id: 'pasta-primavera',
-    name: 'Pasta Primavera',
+    id: 'spaghetti',
+    name: 'Spaghetti Marinara',
     image: `${UNSPLASH}/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=800&q=80`,
     servings: 4,
     ingredients: [
-      { name: 'Pasta', amount: '1 lb' },
-      { name: 'Cherry tomatoes', amount: '2 cups' },
-      { name: 'Zucchini', amount: '1 medium' },
-      { name: 'Olive oil', amount: '3 tbsp' },
-      { name: 'Garlic', amount: '4 cloves' },
-      { name: 'Parmesan', amount: '1/2 cup' },
-    ],
-    leftoverProfile: [
-      { name: 'Cherry tomatoes', remaining: '1 cup', fraction: 0.5 },
-      { name: 'Zucchini', remaining: '1/2 medium', fraction: 0.5 },
-      { name: 'Parmesan', remaining: '1/4 cup', fraction: 0.5 },
+      { name: 'Spaghetti', amount: '1 lb', usedFraction: 1 },
+      { name: 'Ground beef', amount: '1 lb', usedFraction: 1 },
+      { name: 'Onion', amount: '1 large', usedFraction: 0.5, leftoverLabel: '1/2 large onion' },
+      { name: 'Garlic', amount: '4 cloves', usedFraction: 0.5, leftoverLabel: '2 cloves garlic' },
+      { name: 'Tomato sauce', amount: '1 can (24 oz)', usedFraction: 1 },
+      { name: 'Parmesan', amount: '1/2 cup', usedFraction: 0.5, leftoverLabel: '1/4 cup parmesan' },
     ],
   },
   {
-    id: 'chicken-stir-fry',
-    name: 'Chicken Stir-Fry',
-    image: `${UNSPLASH}/photo-1603133872877-684f208fb84b?auto=format&fit=crop&w=800&q=80`,
-    servings: 4,
+    id: 'chicken-salad',
+    name: 'Chicken Salad',
+    image: `${UNSPLASH}/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80`,
+    servings: 3,
     ingredients: [
-      { name: 'Chicken breast', amount: '1.5 lbs' },
-      { name: 'Bell peppers', amount: '2 large' },
-      { name: 'Broccoli', amount: '1 head' },
-      { name: 'Soy sauce', amount: '3 tbsp' },
-      { name: 'Ginger', amount: '1 tbsp' },
-      { name: 'Rice', amount: '2 cups' },
-    ],
-    leftoverProfile: [
-      { name: 'Bell peppers', remaining: '1 large', fraction: 0.5 },
-      { name: 'Broccoli', remaining: '1/2 head', fraction: 0.5 },
-      { name: 'Rice', remaining: '1 cup', fraction: 0.5 },
+      { name: 'Chicken breast', amount: '1.5 lbs', usedFraction: 1 },
+      { name: 'Spinach', amount: '1 bag (10 oz)', usedFraction: 0.5, leftoverLabel: '1/2 bag spinach' },
+      { name: 'Cucumber', amount: '1 medium', usedFraction: 0.5, leftoverLabel: '1/2 cucumber' },
+      { name: 'Cherry tomatoes', amount: '1 cup', usedFraction: 0.5, leftoverLabel: '1/2 cup cherry tomatoes' },
+      { name: 'Olive oil', amount: '3 tbsp', usedFraction: 1 },
+      { name: 'Lemon', amount: '1', usedFraction: 0.5, leftoverLabel: '1/2 lemon' },
     ],
   },
   {
-    id: 'spinach-salad',
-    name: 'Spinach Power Salad',
-    image: `${UNSPLASH}/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80`,
-    servings: 2,
-    ingredients: [
-      { name: 'Spinach', amount: '1 bag (10 oz)' },
-      { name: 'Cucumber', amount: '1 medium' },
-      { name: 'Feta cheese', amount: '1/2 cup' },
-      { name: 'Lemon', amount: '1' },
-      { name: 'Walnuts', amount: '1/4 cup' },
-    ],
-    leftoverProfile: [
-      { name: 'Spinach', remaining: '1/2 bag', fraction: 0.5 },
-      { name: 'Feta cheese', remaining: '1/4 cup', fraction: 0.5 },
-      { name: 'Cucumber', remaining: '1/2 medium', fraction: 0.5 },
-    ],
-  },
-  {
-    id: 'taco-night',
-    name: 'Taco Night',
+    id: 'veggie-tacos',
+    name: 'Veggie Tacos',
     image: `${UNSPLASH}/photo-1565299585323-38174c4aabaa?auto=format&fit=crop&w=800&q=80`,
     servings: 4,
     ingredients: [
-      { name: 'Ground beef', amount: '1 lb' },
-      { name: 'Taco shells', amount: '12' },
-      { name: 'Onion', amount: '1 large' },
-      { name: 'Cilantro', amount: '1 bunch' },
-      { name: 'Sour cream', amount: '1/2 cup' },
-      { name: 'Lime', amount: '2' },
-    ],
-    leftoverProfile: [
-      { name: 'Onion', remaining: '1/2 large', fraction: 0.5 },
-      { name: 'Cilantro', remaining: '1/2 bunch', fraction: 0.5 },
-      { name: 'Sour cream', remaining: '1/4 cup', fraction: 0.5 },
+      { name: 'Taco shells', amount: '12 shells', usedFraction: 0.67, leftoverLabel: '4 taco shells' },
+      { name: 'Black beans', amount: '1 can (15 oz)', usedFraction: 1 },
+      { name: 'Bell peppers', amount: '2 large', usedFraction: 0.5, leftoverLabel: '1 large bell pepper' },
+      { name: 'Onion', amount: '1 large', usedFraction: 0.5, leftoverLabel: '1/2 large onion' },
+      { name: 'Cilantro', amount: '1 bunch', usedFraction: 0.5, leftoverLabel: '1/2 bunch cilantro' },
+      { name: 'Lime', amount: '2', usedFraction: 0.5, leftoverLabel: '1 lime' },
+      { name: 'Avocado', amount: '2', usedFraction: 0.5, leftoverLabel: '1 avocado' },
     ],
   },
   {
-    id: 'veggie-curry',
-    name: 'Veggie Curry',
-    image: `${UNSPLASH}/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=800&q=80`,
-    servings: 4,
+    id: 'mediterranean-bowl',
+    name: 'Mediterranean Rice Bowl',
+    image: `${UNSPLASH}/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80`,
+    servings: 3,
     ingredients: [
-      { name: 'Coconut milk', amount: '1 can' },
-      { name: 'Sweet potato', amount: '2 medium' },
-      { name: 'Chickpeas', amount: '1 can' },
-      { name: 'Spinach', amount: '2 cups' },
-      { name: 'Curry paste', amount: '2 tbsp' },
-      { name: 'Jasmine rice', amount: '2 cups' },
-    ],
-    leftoverProfile: [
-      { name: 'Spinach', remaining: '1 cup', fraction: 0.5 },
-      { name: 'Sweet potato', remaining: '1 medium', fraction: 0.5 },
-      { name: 'Coconut milk', remaining: '1/2 can', fraction: 0.5 },
-    ],
-  },
-  {
-    id: 'salmon-sheet-pan',
-    name: 'Sheet Pan Salmon',
-    image: `${UNSPLASH}/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80`,
-    servings: 2,
-    ingredients: [
-      { name: 'Salmon fillets', amount: '2' },
-      { name: 'Asparagus', amount: '1 bunch' },
-      { name: 'Cherry tomatoes', amount: '1 cup' },
-      { name: 'Lemon', amount: '1' },
-      { name: 'Dill', amount: '2 tbsp' },
-    ],
-    leftoverProfile: [
-      { name: 'Asparagus', remaining: '1/2 bunch', fraction: 0.5 },
-      { name: 'Cherry tomatoes', remaining: '1/2 cup', fraction: 0.5 },
-      { name: 'Lemon', remaining: '1/2', fraction: 0.5 },
+      { name: 'Jasmine rice', amount: '2 cups dry', usedFraction: 0.5, leftoverLabel: '1 cup dry jasmine rice' },
+      { name: 'Chickpeas', amount: '1 can (15 oz)', usedFraction: 0.5, leftoverLabel: '1/2 can chickpeas' },
+      { name: 'Spinach', amount: '2 cups', usedFraction: 0.5, leftoverLabel: '1 cup spinach' },
+      { name: 'Feta cheese', amount: '1/2 cup', usedFraction: 0.5, leftoverLabel: '1/4 cup feta cheese' },
+      { name: 'Cucumber', amount: '1 medium', usedFraction: 0.5, leftoverLabel: '1/2 cucumber' },
+      { name: 'Cherry tomatoes', amount: '1 cup', usedFraction: 0.5, leftoverLabel: '1/2 cup cherry tomatoes' },
     ],
   },
 ];
 
+// Bonus recipes matched to common leftover ingredients
 const BONUS_RECIPES = [
   {
-    id: 'green-goddess-omelette',
-    title: 'Green Goddess Omelette',
+    id: 'spinach-feta-omelette',
+    title: 'Spinach & Feta Omelette',
     image: `${UNSPLASH}/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=900&q=80`,
-    description:
-      'A quick skillet omelette that folds in leftover greens, herbs, and cheese for a zero-waste breakfast or lunch.',
-    tags: ['15 min', 'Breakfast', 'Uses leftovers'],
-    usesLeftovers: ['spinach', 'feta cheese', 'cilantro', 'dill'],
+    description: 'Fold leftover spinach and feta into a fluffy omelette — perfect for half a bag of greens still in the fridge.',
+    tags: ['15 min', 'Breakfast'],
+    matches: ['spinach', 'feta cheese', 'onion', 'bell peppers'],
     extraIngredients: ['2 eggs', '1 tbsp butter', 'Salt & pepper'],
   },
   {
-    id: 'veggie-frittata',
-    title: 'Rainbow Veggie Frittata',
-    image: `${UNSPLASH}/photo-1608039829572-7851f79148b0?auto=format&fit=crop&w=900&q=80`,
-    description:
-      'Bake whatever vegetables you have left into a golden frittata — perfect for peppers, broccoli, and tomatoes.',
-    tags: ['30 min', 'One pan', 'Family size'],
-    usesLeftovers: ['bell peppers', 'broccoli', 'cherry tomatoes', 'onion', 'zucchini'],
-    extraIngredients: ['6 eggs', '1/4 cup milk', 'Olive oil'],
+    id: 'veggie-quesadillas',
+    title: 'Veggie Quesadillas',
+    image: `${UNSPLASH}/photo-1618040996339-56904b7850b7?auto=format&fit=crop&w=900&q=80`,
+    description: 'Crisp up leftover taco shells or tortillas with beans, peppers, and cheese for a quick second dinner.',
+    tags: ['20 min', 'Dinner'],
+    matches: ['taco shells', 'black beans', 'bell peppers', 'onion', 'cilantro', 'avocado'],
+    extraIngredients: ['Shredded cheese', 'Sour cream (optional)'],
   },
   {
-    id: 'spinach-pesto-pasta',
-    title: 'Spinach Pesto Pasta',
+    id: 'garden-chickpea-salad',
+    title: 'Garden Chickpea Salad',
+    image: `${UNSPLASH}/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=900&q=80`,
+    description: 'Toss leftover chickpeas, cucumber, and tomatoes with lemon for a bright lunch that clears the produce drawer.',
+    tags: ['10 min', 'Lunch'],
+    matches: ['chickpeas', 'cucumber', 'cherry tomatoes', 'lemon', 'cilantro', 'spinach'],
+    extraIngredients: ['2 tbsp olive oil', 'Salt & pepper'],
+  },
+  {
+    id: 'garlic-parmesan-pasta',
+    title: 'Garlic Parmesan Pasta',
     image: `${UNSPLASH}/photo-1476124369491-e7addf5db371?auto=format&fit=crop&w=900&q=80`,
-    description:
-      'Blend leftover spinach and herbs into a bright pesto, then toss with pasta for a second dinner from the same groceries.',
-    tags: ['20 min', 'Dinner', 'Sauce hack'],
-    usesLeftovers: ['spinach', 'cilantro', 'parmesan', 'garlic'],
-    extraIngredients: ['8 oz pasta', '1/4 cup olive oil', 'Lemon juice'],
-  },
-  {
-    id: 'coconut-veggie-soup',
-    title: 'Coconut Veggie Soup',
-    image: `${UNSPLASH}/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=900&q=80`,
-    description:
-      'Simmer leftover coconut milk with sweet potato and chickpeas for a cozy soup that clears the fridge.',
-    tags: ['25 min', 'Soup', 'Comfort food'],
-    usesLeftovers: ['coconut milk', 'sweet potato', 'chickpeas', 'spinach'],
-    extraIngredients: ['1 cup water', 'Salt', 'Red pepper flakes'],
+    description: 'Use extra spaghetti and parmesan with garlic for a simple side that finishes what spaghetti night left behind.',
+    tags: ['15 min', 'Side dish'],
+    matches: ['spaghetti', 'parmesan', 'garlic', 'cherry tomatoes'],
+    extraIngredients: ['2 tbsp olive oil', 'Red pepper flakes'],
   },
 ];
+
+// ─── App state ────────────────────────────────────────────────────────────────
 
 const state = {
   selectedMealIds: new Set(),
   checkedGroceries: new Set(),
 };
+
+// ─── DOM references ───────────────────────────────────────────────────────────
 
 const mealGrid = document.getElementById('meal-grid');
 const selectionSummary = document.getElementById('selection-summary');
@@ -215,12 +164,24 @@ const uncheckAllBtn = document.getElementById('uncheck-all');
 const leftoverEmpty = document.getElementById('leftover-empty');
 const leftoverPanel = document.getElementById('leftover-panel');
 const leftoverList = document.getElementById('leftover-list');
+const leftoverCount = document.getElementById('leftover-count');
 const recipeSpotlight = document.getElementById('recipe-spotlight');
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 function getIngredientImage(name) {
-  const key = name.toLowerCase();
-  return INGREDIENT_IMAGES[key] || DEFAULT_INGREDIENT_IMAGE;
+  return INGREDIENT_IMAGES[name.toLowerCase()] || DEFAULT_INGREDIENT_IMAGE;
 }
+
+function normalizeKey(name) {
+  return name.toLowerCase().trim();
+}
+
+function getSelectedMeals() {
+  return MEALS.filter((meal) => state.selectedMealIds.has(meal.id));
+}
+
+// ─── Init & navigation ────────────────────────────────────────────────────────
 
 function init() {
   renderMealGrid();
@@ -267,6 +228,8 @@ function bindGroceryActions() {
   });
 }
 
+// ─── Meal selector: click to select / deselect ────────────────────────────────
+
 function renderMealGrid() {
   mealGrid.innerHTML = MEALS.map((meal) => {
     const selected = state.selectedMealIds.has(meal.id);
@@ -281,13 +244,7 @@ function renderMealGrid() {
       >
         <span class="meal-check" aria-hidden="true">✓</span>
         <div class="meal-photo">
-          <img
-            src="${meal.image}"
-            alt="${meal.name}"
-            width="800"
-            height="600"
-            loading="lazy"
-          >
+          <img src="${meal.image}" alt="${meal.name}" width="800" height="600" loading="lazy">
           <span class="meal-photo-overlay" aria-hidden="true"></span>
         </div>
         <div class="meal-info">
@@ -312,17 +269,21 @@ function toggleMeal(mealId) {
   updateAllViews();
 }
 
-function getSelectedMeals() {
-  return MEALS.filter((meal) => state.selectedMealIds.has(meal.id));
+function updateSelectionSummary() {
+  const count = state.selectedMealIds.size;
+  selectionSummary.hidden = count === 0;
+  selectionCount.textContent = `${count} meal${count === 1 ? '' : 's'} selected`;
 }
 
+// ─── Grocery list: merge ingredients from selected meals ──────────────────────
+
 function buildGroceryItems() {
-  const selectedMeals = getSelectedMeals();
   const ingredientMap = new Map();
 
-  selectedMeals.forEach((meal) => {
+  getSelectedMeals().forEach((meal) => {
     meal.ingredients.forEach((ingredient) => {
-      const key = ingredient.name.toLowerCase();
+      const key = normalizeKey(ingredient.name);
+
       if (!ingredientMap.has(key)) {
         ingredientMap.set(key, {
           name: ingredient.name,
@@ -330,6 +291,7 @@ function buildGroceryItems() {
           sources: [],
         });
       }
+
       const entry = ingredientMap.get(key);
       entry.amounts.push(ingredient.amount);
       if (!entry.sources.includes(meal.name)) {
@@ -369,14 +331,7 @@ function renderGroceryList() {
             data-grocery-id="${item.id}"
             ${checked ? 'checked' : ''}
           >
-          <img
-            class="ingredient-thumb"
-            src="${item.image}"
-            alt="${item.name}"
-            width="52"
-            height="52"
-            loading="lazy"
-          >
+          <img class="ingredient-thumb" src="${item.image}" alt="${item.name}" width="52" height="52" loading="lazy">
           <div class="checklist-content">
             <label for="grocery-${item.id}">
               ${item.name} <span class="amount">(${item.amount})</span>
@@ -401,41 +356,70 @@ function renderGroceryList() {
   });
 }
 
-function buildLeftovers() {
-  const selectedMeals = getSelectedMeals();
+// ─── Leftover Magic: detect partial ingredients & suggest bonus recipe ────────
+
+/**
+ * Scans every ingredient in selected meals.
+ * If usedFraction < 1, the recipe only uses part of what you bought → leftover.
+ * Same ingredient across meals is merged (e.g. onion from spaghetti + tacos).
+ */
+function detectLeftovers() {
   const leftoverMap = new Map();
 
-  selectedMeals.forEach((meal) => {
-    meal.leftoverProfile.forEach((item) => {
-      const key = item.name.toLowerCase();
+  getSelectedMeals().forEach((meal) => {
+    meal.ingredients.forEach((ingredient) => {
+      if (ingredient.usedFraction >= 1) return;
+
+      const key = normalizeKey(ingredient.name);
+      const label = ingredient.leftoverLabel || `some ${ingredient.name.toLowerCase()}`;
+      const unusedFraction = 1 - ingredient.usedFraction;
+
       if (!leftoverMap.has(key)) {
         leftoverMap.set(key, {
-          name: item.name,
-          remaining: item.remaining,
-          fraction: item.fraction,
+          name: ingredient.name,
+          labels: [],
+          unusedFraction: 0,
           meals: [],
         });
       }
+
       const entry = leftoverMap.get(key);
-      entry.meals.push(meal.name);
-      entry.fraction = Math.max(entry.fraction, item.fraction);
+      entry.labels.push(label);
+      entry.unusedFraction += unusedFraction;
+      if (!entry.meals.includes(meal.name)) {
+        entry.meals.push(meal.name);
+      }
     });
   });
 
-  return Array.from(leftoverMap.values()).sort((a, b) => b.fraction - a.fraction);
+  return Array.from(leftoverMap.values())
+    .map((entry) => ({
+      name: entry.name,
+      remaining: entry.labels.length > 1 ? entry.labels.join(' + ') : entry.labels[0],
+      unusedFraction: entry.unusedFraction,
+      meals: entry.meals,
+      image: getIngredientImage(entry.name),
+    }))
+    .sort((a, b) => b.unusedFraction - a.unusedFraction);
 }
 
-function findBestRecipe(leftovers) {
-  if (leftovers.length === 0) return BONUS_RECIPES[0];
+/**
+ * Score each bonus recipe by how many detected leftovers it can use.
+ * Pick the highest-scoring match.
+ */
+function findBestBonusRecipe(leftovers) {
+  if (leftovers.length === 0) return null;
 
-  const leftoverNames = leftovers.map((l) => l.name.toLowerCase());
+  const leftoverKeys = leftovers.map((l) => normalizeKey(l.name));
 
-  let bestRecipe = BONUS_RECIPES[0];
+  let bestRecipe = null;
   let bestScore = -1;
 
   BONUS_RECIPES.forEach((recipe) => {
-    const score = recipe.usesLeftovers.filter((name) =>
-      leftoverNames.some((leftover) => leftover.includes(name) || name.includes(leftover))
+    const score = recipe.matches.filter((match) =>
+      leftoverKeys.some(
+        (key) => key.includes(match) || match.includes(key)
+      )
     ).length;
 
     if (score > bestScore) {
@@ -447,6 +431,17 @@ function findBestRecipe(leftovers) {
   return bestRecipe;
 }
 
+function getMatchedLeftovers(recipe, leftovers) {
+  if (!recipe) return [];
+
+  return leftovers.filter((item) =>
+    recipe.matches.some(
+      (match) =>
+        normalizeKey(item.name).includes(match) || match.includes(normalizeKey(item.name))
+    )
+  );
+}
+
 function renderLeftoverMagic() {
   const hasMeals = state.selectedMealIds.size > 0;
   leftoverEmpty.hidden = hasMeals;
@@ -454,47 +449,39 @@ function renderLeftoverMagic() {
 
   if (!hasMeals) return;
 
-  const leftovers = buildLeftovers();
-  const recipe = findBestRecipe(leftovers);
+  const leftovers = detectLeftovers();
+  const recipe = findBestBonusRecipe(leftovers);
+  const matchedLeftovers = getMatchedLeftovers(recipe, leftovers);
 
-  leftoverList.innerHTML = leftovers
-    .map((item) => {
-      const image = getIngredientImage(item.name);
-      return `
-        <li>
-          <img
-            class="leftover-thumb"
-            src="${image}"
-            alt="${item.name}"
-            width="48"
-            height="48"
-            loading="lazy"
-          >
-          <div class="leftover-details">
-            <span class="leftover-amount">${item.remaining}</span>
-            <span class="leftover-name">${item.name}</span>
-          </div>
-        </li>
-      `;
-    })
-    .join('');
+  if (leftoverCount) {
+    leftoverCount.textContent = `${leftovers.length} leftover${leftovers.length === 1 ? '' : 's'} detected`;
+  }
 
-  const matchedLeftovers = leftovers.filter((item) =>
-    recipe.usesLeftovers.some(
-      (name) =>
-        item.name.toLowerCase().includes(name) || name.includes(item.name.toLowerCase())
-    )
-  );
+  leftoverList.innerHTML = leftovers.length === 0
+    ? '<li class="leftover-empty-msg">No partial ingredients detected — your meals use everything you buy!</li>'
+    : leftovers
+        .map(
+          (item) => `
+            <li>
+              <img class="leftover-thumb" src="${item.image}" alt="${item.name}" width="48" height="48" loading="lazy">
+              <div class="leftover-details">
+                <span class="leftover-amount">${item.remaining}</span>
+                <span class="leftover-name">${item.name}</span>
+                <span class="leftover-from">from ${item.meals.join(', ')}</span>
+              </div>
+            </li>
+          `
+        )
+        .join('');
+
+  if (!recipe) {
+    recipeSpotlight.innerHTML = '<p class="recipe-fallback">Select meals with partial ingredients to unlock a bonus recipe.</p>';
+    return;
+  }
 
   recipeSpotlight.innerHTML = `
     <div class="recipe-photo">
-      <img
-        src="${recipe.image}"
-        alt="${recipe.title}"
-        width="900"
-        height="560"
-        loading="lazy"
-      >
+      <img src="${recipe.image}" alt="${recipe.title}" width="900" height="560" loading="lazy">
       <span class="recipe-photo-badge">Bonus recipe</span>
     </div>
     <div class="recipe-body">
@@ -505,7 +492,7 @@ function renderLeftoverMagic() {
       </div>
       <p class="recipe-ingredients-title">Uses your leftovers</p>
       <ul class="recipe-ingredients">
-        ${matchedLeftovers.map((item) => `<li>${item.remaining} ${item.name}</li>`).join('')}
+        ${matchedLeftovers.map((item) => `<li>${item.remaining}</li>`).join('')}
       </ul>
       <p class="recipe-ingredients-title">You'll also need</p>
       <ul class="recipe-ingredients">
@@ -515,11 +502,7 @@ function renderLeftoverMagic() {
   `;
 }
 
-function updateSelectionSummary() {
-  const count = state.selectedMealIds.size;
-  selectionSummary.hidden = count === 0;
-  selectionCount.textContent = `${count} meal${count === 1 ? '' : 's'} selected`;
-}
+// ─── Sync all views when selection changes ────────────────────────────────────
 
 function updateAllViews() {
   renderMealGrid();
