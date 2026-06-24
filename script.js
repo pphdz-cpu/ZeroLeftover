@@ -48,45 +48,8 @@ const FULL_USE_PATTERN = /^(salt|pepper|black pepper|oil|vinegar|sauce|paste|sea
 // Ingredients commonly bought in larger amounts than one recipe needs
 const PARTIAL_USE_PATTERN = /onion|garlic|cheese|herb|lettuce|spinach|tomato|pepper|avocado|lime|lemon|cucumber|basil|cilantro|cream|yogurt|broccoli|mushroom|egg(?!plant)|rice|noodle|pasta|tortilla|mozzarella|feta| cabbage|carrot|zucchini|eggplant|bean sprout|peanut|pickle|coleslaw|dough|bun|shrimp|beef|chicken|pork|egg/i;
 
-// Bonus recipes matched to common leftover ingredients
-const BONUS_RECIPES = [
-  {
-    id: 'spinach-feta-omelette',
-    title: 'Spinach & Feta Omelette',
-    image: `${UNSPLASH}/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=900&q=80`,
-    description: 'Fold leftover spinach and feta into a fluffy omelette — perfect for half a bag of greens still in the fridge.',
-    tags: ['15 min', 'Breakfast'],
-    matches: ['spinach', 'feta cheese', 'onion', 'bell peppers'],
-    extraIngredients: ['2 eggs', '1 tbsp butter', 'Salt & pepper'],
-  },
-  {
-    id: 'veggie-quesadillas',
-    title: 'Veggie Quesadillas',
-    image: `${UNSPLASH}/photo-1618040996339-56904b7850b7?auto=format&fit=crop&w=900&q=80`,
-    description: 'Crisp up leftover taco shells or tortillas with beans, peppers, and cheese for a quick second dinner.',
-    tags: ['20 min', 'Dinner'],
-    matches: ['taco shells', 'black beans', 'bell peppers', 'onion', 'cilantro', 'avocado'],
-    extraIngredients: ['Shredded cheese', 'Sour cream (optional)'],
-  },
-  {
-    id: 'garden-chickpea-salad',
-    title: 'Garden Chickpea Salad',
-    image: `${UNSPLASH}/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=900&q=80`,
-    description: 'Toss leftover chickpeas, cucumber, and tomatoes with lemon for a bright lunch that clears the produce drawer.',
-    tags: ['10 min', 'Lunch'],
-    matches: ['chickpeas', 'cucumber', 'cherry tomatoes', 'lemon', 'cilantro', 'spinach'],
-    extraIngredients: ['2 tbsp olive oil', 'Salt & pepper'],
-  },
-  {
-    id: 'garlic-parmesan-pasta',
-    title: 'Garlic Parmesan Pasta',
-    image: `${UNSPLASH}/photo-1476124369491-e7addf5db371?auto=format&fit=crop&w=900&q=80`,
-    description: 'Use extra spaghetti and parmesan with garlic for a simple side that finishes what spaghetti night left behind.',
-    tags: ['15 min', 'Side dish'],
-    matches: ['spaghetti', 'parmesan', 'garlic', 'cherry tomatoes'],
-    extraIngredients: ['2 tbsp olive oil', 'Red pepper flakes'],
-  },
-];
+const CUSTOM_MEAL_LEFTOVER_TIP =
+  'Use any extra ingredients in omelettes, wraps, or a quick stir-fry within a few days.';
 
 // ─── App state ────────────────────────────────────────────────────────────────
 
@@ -158,6 +121,7 @@ function normalizeStoredCustomMeal(meal) {
     image: meal.image || CUSTOM_MEAL_PLACEHOLDER,
     servings: meal.servings || Math.max(2, Math.ceil(meal.ingredients.length / 3)),
     isCustom: true,
+    leftoversTips: meal.leftoversTips || CUSTOM_MEAL_LEFTOVER_TIP,
     ingredients: meal.ingredients.map((ingredient) => ({
       name: ingredient.name,
       amount: ingredient.amount,
@@ -236,14 +200,14 @@ const leftoverEmpty = document.getElementById('leftover-empty');
 const leftoverPanel = document.getElementById('leftover-panel');
 const leftoverList = document.getElementById('leftover-list');
 const leftoverCount = document.getElementById('leftover-count');
-const recipeSpotlight = document.getElementById('recipe-spotlight');
+const detectedLeftoversPanel = document.getElementById('detected-leftovers-panel');
+const pantrySaversList = document.getElementById('pantry-savers-list');
+const pantrySaversCount = document.getElementById('pantry-savers-count');
 const addMealForm = document.getElementById('add-meal-form');
 const mealNameInput = document.getElementById('meal-name-input');
 const mealIngredientsInput = document.getElementById('meal-ingredients-input');
 const addMealError = document.getElementById('add-meal-error');
 const addMealSuccess = document.getElementById('add-meal-success');
-const leftoverTips = document.getElementById('leftover-tips');
-const leftoverTipsList = document.getElementById('leftover-tips-list');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -750,6 +714,7 @@ function createCustomMeal(name, ingredientsText) {
     image: CUSTOM_MEAL_PLACEHOLDER,
     servings: Math.max(2, Math.ceil(ingredients.length / 3)),
     isCustom: true,
+    leftoversTips: CUSTOM_MEAL_LEFTOVER_TIP,
     ingredients,
   };
 }
@@ -1111,12 +1076,54 @@ function updateGroceryProgress(items) {
   }
 }
 
-// ─── Leftover Magic: detect partial ingredients & suggest bonus recipe ────────
+// ─── Leftover Magic: pantry saver tips from recipes.json ──────────────────────
+
+function getPantrySavers() {
+  return getSelectedMeals()
+    .filter((meal) => meal.leftoversTips)
+    .map((meal) => ({
+      name: meal.name,
+      image: meal.image || DEFAULT_INGREDIENT_IMAGE,
+      type: meal.type,
+      country: meal.country,
+      tip: meal.leftoversTips,
+      isCustom: meal.isCustom,
+    }));
+}
+
+function renderPantrySaverCard(item) {
+  const tags = ['<span class="pantry-saver-tag pantry-saver-tag--idea">Pantry saver</span>'];
+
+  if (item.isCustom) {
+    tags.push('<span class="pantry-saver-tag">Your meal</span>');
+  } else if (item.type) {
+    tags.push(`<span class="pantry-saver-tag">${escapeHtml(item.type)}</span>`);
+  }
+  if (item.country) {
+    tags.push(`<span class="pantry-saver-tag">${escapeHtml(item.country)}</span>`);
+  }
+
+  return `
+    <li class="pantry-saver-card" role="listitem">
+      <img
+        class="pantry-saver-thumb"
+        src="${item.image}"
+        alt=""
+        width="72"
+        height="72"
+        loading="lazy"
+      >
+      <div class="pantry-saver-body">
+        <h3 class="pantry-saver-meal">${escapeHtml(item.name)}</h3>
+        <div class="pantry-saver-tags">${tags.join('')}</div>
+        <p class="pantry-saver-tip">${escapeHtml(item.tip)}</p>
+      </div>
+    </li>
+  `;
+}
 
 /**
- * Scans every ingredient in selected meals.
- * If usedFraction < 1, the recipe only uses part of what you bought → leftover.
- * Same ingredient across meals is merged (e.g. onion from spaghetti + tacos).
+ * Scans ingredients with partial usage to estimate likely leftovers.
  */
 function detectLeftovers() {
   const leftoverMap = new Map();
@@ -1158,67 +1165,24 @@ function detectLeftovers() {
     .sort((a, b) => b.unusedFraction - a.unusedFraction);
 }
 
-/**
- * Score each bonus recipe by how many detected leftovers it can use.
- * Pick the highest-scoring match.
- */
-function findBestBonusRecipe(leftovers) {
-  if (leftovers.length === 0) return null;
-
-  const leftoverKeys = leftovers.map((l) => normalizeKey(l.name));
-
-  let bestRecipe = null;
-  let bestScore = -1;
-
-  BONUS_RECIPES.forEach((recipe) => {
-    const score = recipe.matches.filter((match) =>
-      leftoverKeys.some(
-        (key) => key.includes(match) || match.includes(key)
-      )
-    ).length;
-
-    if (score > bestScore) {
-      bestScore = score;
-      bestRecipe = recipe;
-    }
-  });
-
-  return bestRecipe;
-}
-
-function getMatchedLeftovers(recipe, leftovers) {
-  if (!recipe) return [];
-
-  return leftovers.filter((item) =>
-    recipe.matches.some(
-      (match) =>
-        normalizeKey(item.name).includes(match) || match.includes(normalizeKey(item.name))
-    )
-  );
-}
-
-function renderLeftoverMagic() {
-  const hasMeals = state.selectedMealIds.size > 0;
-  leftoverEmpty.hidden = hasMeals;
-  leftoverPanel.hidden = !hasMeals;
-
-  if (!hasMeals) return;
-
-  const leftovers = detectLeftovers();
-  const recipe = findBestBonusRecipe(leftovers);
-  const matchedLeftovers = getMatchedLeftovers(recipe, leftovers);
+function renderDetectedLeftovers(leftovers) {
+  if (!leftoverList) return;
 
   if (leftoverCount) {
-    leftoverCount.textContent = `${leftovers.length} leftover${leftovers.length === 1 ? '' : 's'} detected`;
+    leftoverCount.textContent =
+      leftovers.length > 0
+        ? `${leftovers.length} ingredient${leftovers.length === 1 ? '' : 's'} you may have left`
+        : 'Ingredients you may have left after cooking';
   }
 
-  leftoverList.innerHTML = leftovers.length === 0
-    ? '<li class="leftover-empty-msg">No partial ingredients detected — your meals use everything you buy!</li>'
-    : leftovers
-        .map(
-          (item) => `
+  leftoverList.innerHTML =
+    leftovers.length === 0
+      ? '<li class="leftover-empty-msg">No partial ingredients detected for these meals.</li>'
+      : leftovers
+          .map(
+            (item) => `
             <li>
-              <img class="leftover-thumb" src="${item.image}" alt="${escapeHtml(item.name)}" width="48" height="48" loading="lazy">
+              <img class="leftover-thumb" src="${item.image}" alt="" width="48" height="48" loading="lazy">
               <div class="leftover-details">
                 <span class="leftover-amount">${escapeHtml(item.remaining)}</span>
                 <span class="leftover-name">${escapeHtml(item.name)}</span>
@@ -1226,56 +1190,50 @@ function renderLeftoverMagic() {
               </div>
             </li>
           `
-        )
-        .join('');
-
-  renderLeftoverTips();
-
-  if (!recipe) {
-    recipeSpotlight.innerHTML = '<p class="recipe-fallback">Select meals with partial ingredients to unlock a bonus recipe.</p>';
-    return;
-  }
-
-  recipeSpotlight.innerHTML = `
-    <div class="recipe-photo">
-      <img src="${recipe.image}" alt="${recipe.title}" width="900" height="560" loading="lazy">
-      <span class="recipe-photo-badge">Bonus recipe</span>
-    </div>
-    <div class="recipe-body">
-      <h3 class="recipe-title">${recipe.title}</h3>
-      <p class="recipe-desc">${recipe.description}</p>
-      <div class="recipe-tags">
-        ${recipe.tags.map((tag) => `<span class="recipe-tag">${tag}</span>`).join('')}
-      </div>
-      <p class="recipe-ingredients-title">Uses your leftovers</p>
-      <ul class="recipe-ingredients">
-        ${matchedLeftovers.map((item) => `<li>${item.remaining}</li>`).join('')}
-      </ul>
-      <p class="recipe-ingredients-title">You'll also need</p>
-      <ul class="recipe-ingredients">
-        ${recipe.extraIngredients.map((item) => `<li>${item}</li>`).join('')}
-      </ul>
-    </div>
-  `;
+          )
+          .join('');
 }
 
-function renderLeftoverTips() {
-  if (!leftoverTips || !leftoverTipsList) return;
+function clearLeftoverMagicViews() {
+  if (pantrySaversList) pantrySaversList.innerHTML = '';
+  if (pantrySaversCount) pantrySaversCount.textContent = 'Bonus recipe ideas from your selected meals';
+  if (leftoverList) leftoverList.innerHTML = '';
+  if (detectedLeftoversPanel) detectedLeftoversPanel.hidden = true;
+}
 
-  const tips = getSelectedMeals()
-    .filter((meal) => meal.leftoversTips)
-    .map((meal) => ({ name: meal.name, tip: meal.leftoversTips }));
+function renderLeftoverMagic() {
+  const hasMeals = state.selectedMealIds.size > 0;
+  leftoverEmpty.hidden = hasMeals;
+  leftoverPanel.hidden = !hasMeals;
 
-  if (tips.length === 0) {
-    leftoverTips.hidden = true;
-    leftoverTipsList.innerHTML = '';
+  if (!hasMeals) {
+    clearLeftoverMagicViews();
     return;
   }
 
-  leftoverTips.hidden = false;
-  leftoverTipsList.innerHTML = tips
-    .map((entry) => `<li><strong>${escapeHtml(entry.name)}:</strong> ${escapeHtml(entry.tip)}</li>`)
-    .join('');
+  const pantrySavers = getPantrySavers();
+
+  if (pantrySaversCount) {
+    pantrySaversCount.textContent =
+      pantrySavers.length > 0
+        ? `${pantrySavers.length} bonus recipe idea${pantrySavers.length === 1 ? '' : 's'} from your meals`
+        : 'Select recipe meals to unlock pantry saver tips';
+  }
+
+  if (pantrySaversList) {
+    pantrySaversList.innerHTML =
+      pantrySavers.length > 0
+        ? pantrySavers.map(renderPantrySaverCard).join('')
+        : '<li class="pantry-saver-empty">No pantry saver tips found for your current selection.</li>';
+  }
+
+  const leftovers = detectLeftovers();
+
+  if (detectedLeftoversPanel) {
+    detectedLeftoversPanel.hidden = leftovers.length === 0;
+  }
+
+  renderDetectedLeftovers(leftovers);
 }
 
 // ─── Sync all views when selection changes ────────────────────────────────────
