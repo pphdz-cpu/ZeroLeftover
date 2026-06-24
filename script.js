@@ -314,6 +314,14 @@ function recipeToMeal(recipe) {
   };
 }
 
+function applyRecipeData(recipes) {
+  if (!Array.isArray(recipes)) {
+    throw new Error('recipes data must be an array');
+  }
+  state.recipeMeals = recipes.filter(isValidRecipe).map(recipeToMeal);
+  state.recipesError = null;
+}
+
 async function loadRecipes() {
   try {
     const response = await fetch(RECIPES_URL);
@@ -322,16 +330,18 @@ async function loadRecipes() {
     }
 
     const recipes = await response.json();
-    if (!Array.isArray(recipes)) {
-      throw new Error('recipes.json must contain an array');
-    }
-
-    state.recipeMeals = recipes.filter(isValidRecipe).map(recipeToMeal);
-    state.recipesError = null;
+    applyRecipeData(recipes);
   } catch (error) {
-    console.error('Failed to load recipes.json:', error);
-    state.recipeMeals = [];
-    state.recipesError = error.message;
+    console.warn('Could not fetch recipes.json:', error);
+
+    if (window.EMBEDDED_RECIPES && Array.isArray(window.EMBEDDED_RECIPES)) {
+      applyRecipeData(window.EMBEDDED_RECIPES);
+      console.info('Loaded recipes from embedded fallback.');
+    } else {
+      console.error('Failed to load recipes:', error);
+      state.recipeMeals = [];
+      state.recipesError = error.message;
+    }
   } finally {
     state.recipesLoaded = true;
   }
@@ -370,17 +380,17 @@ const INGREDIENT_ALIASES = {
   onion: ['onions', 'red onion', 'yellow onion', 'large onion', 'white onion'],
   garlic: ['garlic cloves', 'cloves garlic', 'clove garlic', 'fresh garlic'],
   tomato: ['tomatoes', 'roma tomatoes', 'roma tomato', 'cherry tomatoes', 'cherry tomato'],
-  bell pepper: ['bell peppers', 'red bell pepper', 'yellow bell pepper', 'green bell pepper'],
-  chicken breast: ['chicken breasts', 'chicken thigh', 'chicken thighs'],
+  'bell pepper': ['bell peppers', 'red bell pepper', 'yellow bell pepper', 'green bell pepper'],
+  'chicken breast': ['chicken breasts', 'chicken thigh', 'chicken thighs'],
   parmesan: ['parmesan cheese', 'grated parmesan', 'pecorino romano', 'grated pecorino romano'],
   mozzarella: ['fresh mozzarella', 'mozzarella cheese'],
-  feta cheese: ['feta', 'crumbled feta'],
+  'feta cheese': ['feta', 'crumbled feta'],
   cilantro: ['fresh cilantro', 'cilantro for garnish'],
   basil: ['fresh basil', 'fresh basil leaves', 'basil leaves'],
   spinach: ['baby spinach', 'fresh spinach'],
   rice: ['basmati rice', 'jasmine rice', 'cooked rice', 'white rice', 'arborio rice'],
-  olive oil: ['extra virgin olive oil'],
-  black pepper: ['pepper', 'ground pepper'],
+  'olive oil': ['extra virgin olive oil'],
+  'black pepper': ['pepper', 'ground pepper'],
   salt: ['kosher salt', 'sea salt', 'salt and pepper'],
   lime: ['limes', 'fresh lime'],
   lemon: ['lemons', 'fresh lemon'],
@@ -391,19 +401,19 @@ const INGREDIENT_ALIASES = {
   mushroom: ['mushrooms', 'cremini mushrooms', 'button mushrooms'],
   broccoli: ['broccoli florets', 'broccoli head'],
   chickpeas: ['chickpea', 'garbanzo beans'],
-  black beans: ['black bean'],
-  sour cream: ['crema'],
+  'black beans': ['black bean'],
+  'sour cream': ['crema'],
   cheese: ['shredded cheese'],
   tortilla: ['tortillas', 'flour tortillas', 'corn tortillas', 'small flour tortillas'],
-  taco shell: ['taco shells'],
-  ground beef: ['beef', 'minced beef'],
+  'taco shell': ['taco shells'],
+  'ground beef': ['beef', 'minced beef'],
   shrimp: ['large shrimp', 'prawns'],
-  pork shoulder: ['pork', 'pulled pork'],
-  coconut milk: ['canned coconut milk'],
-  soy sauce: ['low sodium soy sauce'],
+  'pork shoulder': ['pork', 'pulled pork'],
+  'coconut milk': ['canned coconut milk'],
+  'soy sauce': ['low sodium soy sauce'],
   ginger: ['fresh ginger', 'ginger root'],
-  bean sprout: ['bean sprouts'],
-  sweet potato: ['sweet potatoes'],
+  'bean sprout': ['bean sprouts'],
+  'sweet potato': ['sweet potatoes'],
   asparagus: ['asparagus bunch'],
   dill: ['fresh dill'],
   walnut: ['walnuts'],
@@ -421,27 +431,26 @@ const INGREDIENT_ALIASES = {
   eggplant: ['eggplants', 'aubergine'],
   zucchini: ['zucchinis'],
   potato: ['potatoes'],
-  sweet potato: ['sweet potatoes'],
   corn: ['corn kernels', 'sweet corn'],
   cabbage: ['cabbage slaw'],
-  sesame oil: ['toasted sesame oil'],
-  sesame seed: ['sesame seeds'],
-  green onion: ['green onions', 'scallions'],
-  curry paste: ['thai curry paste'],
-  fish sauce: ['nam pla'],
+  'sesame oil': ['toasted sesame oil'],
+  'sesame seed': ['sesame seeds'],
+  'green onion': ['green onions', 'scallions'],
+  'curry paste': ['thai curry paste'],
+  'fish sauce': ['nam pla'],
   tamarind: ['tamarind paste'],
   gochujang: ['korean chili paste'],
   mirin: ['rice wine mirin'],
   honey: ['raw honey'],
-  brown sugar: ['sugar'],
+  'brown sugar': ['sugar'],
   paprika: ['smoked paprika'],
   cumin: ['ground cumin'],
-  garam masala: ['masala'],
+  'garam masala': ['masala'],
   thyme: ['fresh thyme'],
   oregano: ['dried oregano'],
-  kalamata olive: ['kalamata olives', 'olives'],
-  kalamata olives: ['olives'],
-  romaine lettuce: ['romaine', 'lettuce'],
+  'kalamata olive': ['kalamata olives', 'olives'],
+  'kalamata olives': ['olives'],
+  'romaine lettuce': ['romaine', 'lettuce'],
   romaine: ['romaine lettuce', 'lettuce head'],
   pancetta: ['bacon', 'pancetta or bacon'],
   bean: ['black beans', 'kidney beans'],
@@ -1020,6 +1029,7 @@ function buildGroceryItems() {
   });
 
   pruneCheckedGroceries(items.map((item) => item.id));
+  saveCheckedGroceries();
 
   return items.sort((a, b) => a.name.localeCompare(b.name));
 }
