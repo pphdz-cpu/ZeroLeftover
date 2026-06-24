@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zero Leftover</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="#" class="logo" data-nav="meal-selector">
+        <span class="logo-mark" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C8.5 2 6 4.5 6 8c0 3.5 2 6 6 10 4-4 6-6.5 6-10 0-3.5-2.5-6-6-6z" fill="currentColor" opacity="0.9"/>
+            <path d="M12 22s-5-4.5-5-9a5 5 0 0 1 10 0c0 4.5-5 9-5 9z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+          </svg>
+        </span>
+        <span class="logo-text">Zero Leftover</span>
+      </a>
+      <nav class="main-nav" aria-label="Main navigation">
+        <button type="button" class="nav-btn active" data-nav="meal-selector">
+          <span class="nav-icon" aria-hidden="true">🍽️</span>
+          Meal Selector
+        </button>
+        <button type="button" class="nav-btn" data-nav="grocery-list">
+          <span class="nav-icon" aria-hidden="true">🛒</span>
+          Grocery List
+        </button>
+        <button type="button" class="nav-btn" data-nav="leftover-magic">
+          <span class="nav-icon" aria-hidden="true">✨</span>
+          Leftover Magic
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- Meal Selector -->
+    <section id="meal-selector" class="page-section section-meals active" aria-labelledby="meal-selector-heading">
+      <div class="section-hero section-hero--meals">
+        <div class="section-badge">Step 1</div>
+        <div class="section-header">
+          <h1 id="meal-selector-heading">Meal Selector</h1>
+          <p class="section-subtitle">Browse 15 recipes from around the world, or add your own. Tap to select — your picks instantly shape your grocery list and leftover ideas.</p>
+        </div>
+      </div>
+
+      <div class="selection-summary" id="selection-summary" hidden>
+        <div class="selection-summary-text">
+          <span class="selection-dot" aria-hidden="true"></span>
+          <span id="selection-count" aria-live="polite">0 meals selected</span>
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" id="clear-selection">Clear all</button>
+      </div>
+
+      <div class="meal-selector-layout">
+        <aside class="add-meal-panel" aria-labelledby="add-meal-heading">
+          <div class="add-meal-panel-header">
+            <span class="add-meal-icon" aria-hidden="true">➕</span>
+            <h2 id="add-meal-heading">Add your own meal</h2>
+          </div>
+          <p class="add-meal-hint">Create a custom meal card — it works just like the samples below.</p>
+
+          <form class="add-meal-form" id="add-meal-form" novalidate>
+            <div class="form-field">
+              <label for="meal-name-input">Meal Name</label>
+              <input
+                type="text"
+                id="meal-name-input"
+                name="mealName"
+                placeholder="e.g. Turkey Wraps"
+                autocomplete="off"
+                required
+              >
+            </div>
+
+            <div class="form-field">
+              <label for="meal-ingredients-input">Ingredients <span class="label-hint">(separated by commas)</span></label>
+              <textarea
+                id="meal-ingredients-input"
+                name="ingredients"
+                rows="4"
+                placeholder="e.g. 1 lb ground turkey, spinach, 1 onion, tortillas, salsa"
+                required
+              ></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-add-meal">Add Meal</button>
+            <p class="form-feedback form-feedback--error" id="add-meal-error" hidden></p>
+            <p class="form-feedback form-feedback--success" id="add-meal-success" hidden></p>
+          </form>
+        </aside>
+
+        <div class="meal-grid" id="meal-grid" role="list">
+          <p class="meal-grid-status" id="meal-grid-status">Loading recipes…</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Grocery List -->
+    <section id="grocery-list" class="page-section section-grocery" aria-labelledby="grocery-list-heading" hidden>
+      <div class="section-hero section-hero--grocery">
+        <div class="section-badge">Step 2</div>
+        <div class="section-header">
+          <h1 id="grocery-list-heading">Grocery List</h1>
+          <p class="section-subtitle">Every ingredient from your selected meals, combined into one clean shopping checklist.</p>
+        </div>
+      </div>
+
+      <div class="empty-state empty-state--grocery" id="grocery-empty">
+        <img
+          class="empty-state-image"
+          src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&q=80"
+          alt="Fresh vegetables at a grocery store"
+          width="800"
+          height="500"
+        >
+        <div class="empty-state-body">
+          <h2>No meals selected yet</h2>
+          <p>Pick a few dishes and we'll build your list automatically.</p>
+          <button type="button" class="btn btn-primary" data-nav="meal-selector">Choose meals</button>
+        </div>
+      </div>
+
+      <div class="grocery-panel" id="grocery-panel" hidden>
+        <div class="panel-toolbar">
+          <div class="panel-toolbar-left">
+            <span class="panel-icon" aria-hidden="true">📋</span>
+            <span id="grocery-item-count" aria-live="polite">0 items</span>
+            <span class="grocery-progress" id="grocery-progress" hidden></span>
+          </div>
+          <div class="panel-toolbar-actions">
+            <button type="button" class="btn btn-secondary btn-sm" id="uncheck-all">Uncheck all</button>
+          </div>
+        </div>
+        <p class="grocery-hint">Tap items as you shop — checked items stay crossed off even after you close the browser.</p>
+        <ul class="checklist" id="grocery-checklist" role="list"></ul>
+      </div>
+    </section>
+
+    <!-- Leftover Magic -->
+    <section id="leftover-magic" class="page-section section-leftover" aria-labelledby="leftover-magic-heading" hidden>
+      <div class="section-hero section-hero--leftover">
+        <div class="section-badge section-badge--magic">Step 3</div>
+        <div class="section-header section-header--magic">
+          <h1 id="leftover-magic-heading">
+            <span class="magic-wand-icon" aria-hidden="true">🪄</span>
+            Leftover Magic
+          </h1>
+          <p class="section-subtitle">Chef-approved ways to use extra ingredients from the meals you picked — zero waste, extra flavor.</p>
+        </div>
+      </div>
+
+      <div class="magic-placeholder" id="leftover-empty">
+        <div class="magic-placeholder-inner">
+          <span class="magic-placeholder-wand" aria-hidden="true">🪄</span>
+          <h2>Your leftover magic awaits</h2>
+          <p>Select some meals above to reveal your leftover magic here!</p>
+          <button type="button" class="btn btn-primary" data-nav="meal-selector">Choose meals</button>
+        </div>
+      </div>
+
+      <div class="magic-content" id="leftover-panel" hidden>
+        <div class="magic-panel">
+          <div class="magic-panel-header">
+            <span class="magic-panel-icon" aria-hidden="true">✨</span>
+            <div>
+              <h2 class="magic-panel-title">Pantry Savers</h2>
+              <p class="magic-panel-subtitle" id="pantry-savers-count" aria-live="polite">Bonus recipe ideas from your selected meals</p>
+            </div>
+          </div>
+
+          <ul class="pantry-savers-list" id="pantry-savers-list" role="list"></ul>
+        </div>
+
+        <div class="magic-panel magic-panel--secondary" id="detected-leftovers-panel" hidden>
+          <div class="magic-panel-header">
+            <span class="magic-panel-icon" aria-hidden="true">🥬</span>
+            <div>
+              <h2 class="magic-panel-title">Likely leftovers</h2>
+              <p class="magic-panel-subtitle" id="leftover-count" aria-live="polite">Ingredients you may have left after cooking</p>
+            </div>
+          </div>
+          <ul class="leftover-list" id="leftover-list" role="list"></ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>Zero Leftover — cook smart, waste nothing.</p>
+      <button type="button" class="btn btn-start-fresh" id="start-fresh-btn" aria-label="Start fresh for a new week">
+        <span class="start-fresh-icon" aria-hidden="true">↻</span>
+        Start Fresh
+      </button>
+    </div>
+  </footer>
+
+  <script src="recipes-embed.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
