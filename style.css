@@ -1316,50 +1316,185 @@ img {
   transform: scale(0.97);
 }
 
-/* ── Responsive ── */
+/* ── Responsive: mobile (< 768px) ── */
 
-@media (max-width: 640px) {
+@media (max-width: 767px) {
+  :root {
+    --header-height: auto;
+  }
+
   .header-inner {
     flex-direction: column;
     height: auto;
-    padding: 1rem 1.25rem;
+    padding: 0.85rem 1rem 1rem;
+    gap: 0.85rem;
   }
 
   .main-nav {
     width: 100%;
+    gap: 0.35rem;
   }
 
   .nav-btn {
     flex: 1;
     justify-content: center;
+    min-height: 44px;
+    min-width: 44px;
     font-size: 0.8125rem;
-    padding: 0.5rem 0.4rem;
+    padding: 0.65rem 0.5rem;
   }
 
   .nav-icon {
-    font-size: 0.9rem;
+    font-size: 1rem;
+  }
+
+  .main-content {
+    max-width: 100%;
+    padding: 1.25rem 1rem 2.5rem;
+  }
+
+  /* Stack all three sections vertically at full width */
+  .page-section,
+  .page-section[hidden] {
+    display: block !important;
+    width: 100%;
+    max-width: 100%;
+    scroll-margin-top: 5.5rem;
+  }
+
+  .page-section + .page-section {
+    margin-top: 2.5rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--border);
   }
 
   .section-hero {
-    padding: 1.5rem 1.25rem;
+    padding: 1.35rem 1.15rem;
+    margin-bottom: 1.5rem;
   }
 
+  .section-header h1 {
+    font-size: 1.85rem;
+  }
+
+  .section-subtitle {
+    font-size: 1rem;
+  }
+
+  .meal-selector-layout {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .add-meal-panel {
+    position: static;
+    width: 100%;
+  }
+
+  .selection-summary {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    text-align: center;
+  }
+
+  .selection-summary .btn {
+    width: 100%;
+  }
+
+  /* Single-column meal cards for readable images and text */
   .meal-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1.15rem;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .meal-name {
+    font-size: 1.35rem;
+  }
+
+  .meal-meta {
+    font-size: 1rem;
+  }
+
+  .meal-info {
+    padding: 1.35rem 1.25rem 1.5rem;
+  }
+
+  /* Thumb-friendly buttons and form controls */
+  .btn {
+    min-height: 48px;
+    font-size: 1.0625rem;
+    padding: 0.85rem 1.25rem;
+  }
+
+  .btn-sm {
+    min-height: 44px;
+    font-size: 0.9375rem;
+    padding: 0.65rem 1rem;
+  }
+
+  .btn-add-meal,
+  .btn-start-fresh {
+    min-height: 48px;
+  }
+
+  .form-field input,
+  .form-field textarea {
+    min-height: 48px;
+    font-size: 16px;
+    padding: 0.85rem 1rem;
+  }
+
+  .form-field textarea {
+    min-height: 120px;
+  }
+
+  .panel-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 1rem 1.15rem;
+  }
+
+  .panel-toolbar-actions {
+    width: 100%;
+  }
+
+  .panel-toolbar-actions .btn {
+    width: 100%;
   }
 
   .checklist-item {
     flex-wrap: wrap;
+    align-items: center;
+    gap: 0.85rem;
+    min-height: 56px;
     padding: 1rem 1.15rem;
   }
 
-  .checklist-source {
-    margin-left: calc(52px + 1rem + 1.35rem);
+  .checklist-item input[type="checkbox"],
+  .grocery-checkbox {
+    width: 24px;
+    height: 24px;
+    min-width: 44px;
+    min-height: 44px;
+    margin: -10px;
+    padding: 10px;
+    box-sizing: content-box;
   }
 
-  .main-content {
-    padding: 1.5rem 1.15rem 3rem;
+  .checklist-item label {
+    font-size: 1.125rem;
+    padding: 0.25rem 0;
+  }
+
+  .checklist-source {
+    margin-left: calc(52px + 0.85rem + 24px);
+  }
+
+  .ingredient-thumb {
+    width: 56px;
+    height: 56px;
   }
 
   .footer-inner {
@@ -1370,6 +1505,9 @@ img {
   .btn-start-fresh {
     width: 100%;
     justify-content: center;
+    min-height: 48px;
+    font-size: 1rem;
+    padding: 0.85rem 1.25rem;
   }
 
   .pantry-saver-card {
@@ -1378,6 +1516,14 @@ img {
 
   .pantry-saver-thumb {
     width: 100%;
-    height: 140px;
+    height: 160px;
+  }
+
+  .empty-state-body .btn {
+    width: 100%;
+  }
+
+  .magic-placeholder {
+    padding: 2.25rem 1.15rem;
   }
 }

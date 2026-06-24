@@ -779,6 +779,30 @@ function handleAddMeal(event) {
 
 // ─── Init & navigation ────────────────────────────────────────────────────────
 
+const MOBILE_LAYOUT_MQ = window.matchMedia('(max-width: 767px)');
+
+function isMobileLayout() {
+  return MOBILE_LAYOUT_MQ.matches;
+}
+
+/**
+ * On mobile, all sections stack vertically; on desktop, tab-style show/hide.
+ */
+function applyLayoutMode() {
+  if (isMobileLayout()) {
+    document.body.classList.add('layout-mobile');
+    document.querySelectorAll('.page-section').forEach((section) => {
+      section.hidden = false;
+    });
+    return;
+  }
+
+  document.body.classList.remove('layout-mobile');
+  const activeSection =
+    document.querySelector('.page-section.active') || document.getElementById('meal-selector');
+  showSection(activeSection?.id || 'meal-selector', { skipScroll: true });
+}
+
 async function init() {
   bindNavigation();
   bindMealActions();
@@ -786,6 +810,9 @@ async function init() {
   bindAddMealForm();
   bindStartFresh();
   renderMealGrid();
+
+  applyLayoutMode();
+  MOBILE_LAYOUT_MQ.addEventListener('change', applyLayoutMode);
 
   await loadRecipes();
   loadFromStorage();
@@ -844,15 +871,33 @@ function bindNavigation() {
   });
 }
 
-function showSection(sectionId) {
+function showSection(sectionId, options = {}) {
+  const { skipScroll = false } = options;
+
+  document.querySelectorAll('.nav-btn').forEach((btn) => {
+    btn.classList.toggle('active', btn.getAttribute('data-nav') === sectionId);
+  });
+
+  if (isMobileLayout()) {
+    document.querySelectorAll('.page-section').forEach((section) => {
+      const isActive = section.id === sectionId;
+      section.classList.toggle('active', isActive);
+      section.hidden = false;
+    });
+
+    if (!skipScroll) {
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+    return;
+  }
+
   document.querySelectorAll('.page-section').forEach((section) => {
     const isActive = section.id === sectionId;
     section.classList.toggle('active', isActive);
     section.hidden = !isActive;
-  });
-
-  document.querySelectorAll('.nav-btn').forEach((btn) => {
-    btn.classList.toggle('active', btn.getAttribute('data-nav') === sectionId);
   });
 }
 
